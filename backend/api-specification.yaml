@@ -1,0 +1,1236 @@
+openapi: 3.0.3
+info:
+  title: Planning Poker API
+  description: |
+    A comprehensive REST API for collaborative agile story estimation with real-time features.
+    
+    ## Features
+    - Multiple sizing methodologies (Fibonacci, T-Shirt, Powers of 2, Linear, Custom)
+    - Real-time collaboration with WebSocket support
+    - Team management and user tracking
+    - Story backlog management
+    - Vote confidence tracking and analytics
+    - Session history and reporting
+    - Export/Import capabilities
+    - Timer and auto-reveal functionality
+    
+    ## Authentication
+    Currently uses session codes for access. Future versions will support OAuth2/JWT.
+    
+    ## Rate Limiting
+    - 100 requests per minute per IP for session creation
+    - 1000 requests per minute for other endpoints
+    
+  version: 1.0.0
+  contact:
+    name: PandaC Team
+    email: support@pandac.com
+    url: https://github.com/pandac/planning-poker
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:8080/api
+    description: Development server
+  - url: https://api.planningpoker.pandac.com/api
+    description: Production server
+
+tags:
+  - name: Planning Poker
+    description: Planning Poker session management and voting APIs
+
+paths:
+  # ==================== SESSION ENDPOINTS ====================
+  /sessions:
+    post:
+      tags: [Planning Poker]
+      summary: Create a new planning poker session
+      description: Creates a new session with a unique 6-character code
+      operationId: createSession
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSessionRequest'
+            examples:
+              fibonacci:
+                summary: Fibonacci sizing
+                value:
+                  name: "Sprint 24 Planning"
+                  sizingMethod: "FIBONACCI"
+                  description: "Q1 2026 Sprint Planning"
+                  moderatorName: "John Doe"
+                  settings:
+                    autoReveal: false
+                    timerEnabled: true
+                    timerDuration: 300
+                    allowChangeVote: true
+              tshirt:
+                summary: T-Shirt sizing
+                value:
+                  name: "Feature Estimation"
+                  sizingMethod: "T_SHIRT"
+                  moderatorName: "Jane Smith"
+      responses:
+        '201':
+          description: Session created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+
+  /sessions/{sessionCode}:
+    get:
+      tags: [Planning Poker]
+      summary: Get session details
+      description: Retrieve full session information including participants and settings
+      operationId: getSession
+      parameters:
+        - $ref: '#/components/parameters/SessionCode'
+      responses:
+        '200':
+          description: Session details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    
+    put:
+      tags: [Planning Poker]
+      summary: Update session settings
+      description: Update session configuration (moderator only)
+      operationId: updateSession
+      parameters:
+        - $ref: '#/components/parameters/SessionCode'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateSessionRequest'
+      responses:
+        '200':
+          description: Session updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+    
+    delete:
+      tags: [Planning Poker]
+      summary: End/delete session
+      description: Terminates the session (moderator only)
+      operationId: deleteSession
+      parameters:
+        - $ref: '#/components/parameters/SessionCode'
+      responses:
+        '204':
+          description: Session deleted
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /sessions/{sessionCode}/join:
+    post:
+      tags: [Planning Poker]
+      summary: Join a session
+      description: Add a participant to an active session
+      operationId: joinSession
+      parameters:
+        - $ref: '#/components/parameters/SessionCode'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JoinSessionRequest'
+      responses:
+        '200':
+          description: Joined successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserSession'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /sessions/{sessionCode}/leave:
+    post:
+      tags: [Planning Poker]
+      summary: Leave a session
+      description: Remove user from active participants
+      operationId: leaveSession
+      parameters:
+        - $ref: '#/components/parameters/SessionCode'
+        - name: userId
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: Left successfully
+
+  /sessions/{sessionCode}/current-story:
+    post:
+      tags: [Planning Poker]
+      summary: Set current story for voting
+      description: Change the active story being estimated
+      operationId: setCurrentStory
+      parameters:
+        - $ref: '#/components/parameters/SessionCode'
+        - name: storyId
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: Story ID to set as current
+      responses:
+        '200':
+          description: Current story updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+
+  /sessions/{sessionCode}/reveal:
+    post:
+      tags: [Planning Poker]
+      summary: Reveal all votes
+      description: Reveal all votes for the current story
+      operationId: revealVotes
+      parameters:
+        - $ref: '#/components/parameters/SessionCode'
+      responses:
+        '200':
+          description: Votes revealed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VoteReveal'
+
+  /sessions/{sessionCode}/reset-votes:
+    post:
+      tags: [Planning Poker]
+      summary: Reset votes for current story
+      description: Clear all votes to start a new round
+      operationId: resetVotes
+      parameters:
+        - $ref: '#/components/parameters/SessionCode'
+      responses:
+        '204':
+          description: Votes reset successfully
+
+  # ==================== STORY ENDPOINTS ====================
+  /sessions/{sessionCode}/stories:
+    get:
+      tags: [Planning Poker]
+      summary: List all stories
+      description: Get all stories in the session backlog
+      operationId: getStories
+      parameters:
+        - $ref: '#/components/parameters/SessionCode'
+        - name: status
+          in: query
+          description: Filter by story status
+          schema:
+            $ref: '#/components/schemas/StoryStatus'
+      responses:
+        '200':
+          description: List of stories
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Story'
+    
+    post:
+      tags: [Planning Poker]
+      summary: Create a new story
+      description: Add a story to the backlog
+      operationId: createStory
+      parameters:
+        - $ref: '#/components/parameters/SessionCode'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateStoryRequest'
+      responses:
+        '201':
+          description: Story created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Story'
+
+  /sessions/{sessionCode}/stories/{storyId}:
+    get:
+      tags: [Planning Poker]
+      summary: Get story details
+      operationId: getStory
+      parameters:
+        - $ref: '#/components/parameters/SessionCode'
+        - $ref: '#/components/parameters/StoryId'
+      responses:
+        '200':
+          description: Story details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Story'
+    
+    put:
+      tags: [Planning Poker]
+      summary: Update story
+      operationId: updateStory
+      parameters:
+        - $ref: '#/components/parameters/SessionCode'
+        - $ref: '#/components/parameters/StoryId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateStoryRequest'
+      responses:
+        '200':
+          description: Story updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Story'
+    
+    delete:
+      tags: [Planning Poker]
+      summary: Delete story
+      operationId: deleteStory
+      parameters:
+        - $ref: '#/components/parameters/SessionCode'
+        - $ref: '#/components/parameters/StoryId'
+      responses:
+        '204':
+          description: Story deleted
+
+  /sessions/{sessionCode}/stories/{storyId}/finalize:
+    put:
+      tags: [Planning Poker]
+      summary: Finalize story estimate
+      description: Set the final agreed estimate for a story
+      operationId: finalizeEstimate
+      parameters:
+        - $ref: '#/components/parameters/SessionCode'
+        - $ref: '#/components/parameters/StoryId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [finalEstimate]
+              properties:
+                finalEstimate:
+                  type: string
+                  description: The final agreed estimate
+                  example: "5"
+                notes:
+                  type: string
+                  description: Optional notes about the estimate
+      responses:
+        '200':
+          description: Estimate finalized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Story'
+
+  # ==================== VOTING ENDPOINTS ====================
+  /sessions/{sessionCode}/stories/{storyId}/votes:
+    get:
+      tags: [Planning Poker]
+      summary: Get votes for a story
+      operationId: getVotes
+      parameters:
+        - $ref: '#/components/parameters/SessionCode'
+        - $ref: '#/components/parameters/StoryId'
+        - name: revealed
+          in: query
+          description: Only show if votes are revealed
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: List of votes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Vote'
+    
+    post:
+      tags: [Planning Poker]
+      summary: Cast or update vote
+      description: Submit an estimate for a story
+      operationId: castVote
+      parameters:
+        - $ref: '#/components/parameters/SessionCode'
+        - $ref: '#/components/parameters/StoryId'
+        - name: userId
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VoteRequest'
+      responses:
+        '201':
+          description: Vote recorded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vote'
+
+  /sessions/{sessionCode}/stories/{storyId}/votes/{userId}:
+    delete:
+      tags: [Planning Poker]
+      summary: Remove vote
+      description: Delete a user's vote for a story
+      operationId: deleteVote
+      parameters:
+        - $ref: '#/components/parameters/SessionCode'
+        - $ref: '#/components/parameters/StoryId'
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: Vote deleted
+
+  # ==================== USER ENDPOINTS ====================
+  /sessions/{sessionCode}/users:
+    get:
+      tags: [Planning Poker]
+      summary: Get active users
+      description: List all participants in the session
+      operationId: getUsers
+      parameters:
+        - $ref: '#/components/parameters/SessionCode'
+        - name: activeOnly
+          in: query
+          description: Filter to only active users
+          schema:
+            type: boolean
+            default: true
+      responses:
+        '200':
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+
+  /sessions/{sessionCode}/users/{userId}:
+    get:
+      tags: [Planning Poker]
+      summary: Get user details
+      operationId: getUser
+      parameters:
+        - $ref: '#/components/parameters/SessionCode'
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: User details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+    
+    put:
+      tags: [Planning Poker]
+      summary: Update user profile
+      operationId: updateUser
+      parameters:
+        - $ref: '#/components/parameters/SessionCode'
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserRequest'
+      responses:
+        '200':
+          description: User updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+
+  # ==================== ANALYTICS ENDPOINTS ====================
+  /sessions/{sessionCode}/analytics:
+    get:
+      tags: [Planning Poker]
+      summary: Get session analytics
+      description: Retrieve insights and metrics for the session
+      operationId: getSessionAnalytics
+      parameters:
+        - $ref: '#/components/parameters/SessionCode'
+      responses:
+        '200':
+          description: Analytics data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionAnalytics'
+
+  /sessions/{sessionCode}/stories/{storyId}/analytics:
+    get:
+      tags: [Planning Poker]
+      summary: Get story voting analytics
+      description: Detailed analytics for a specific story's votes
+      operationId: getStoryAnalytics
+      parameters:
+        - $ref: '#/components/parameters/SessionCode'
+        - $ref: '#/components/parameters/StoryId'
+      responses:
+        '200':
+          description: Story analytics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StoryAnalytics'
+
+  # ==================== EXPORT/IMPORT ENDPOINTS ====================
+  /sessions/{sessionCode}/export:
+    get:
+      tags: [Planning Poker]
+      summary: Export session data
+      description: Export complete session including stories and votes
+      operationId: exportSession
+      parameters:
+        - $ref: '#/components/parameters/SessionCode'
+        - name: format
+          in: query
+          description: Export format
+          schema:
+            type: string
+            enum: [json, csv, pdf]
+            default: json
+      responses:
+        '200':
+          description: Exported data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionExport'
+            text/csv:
+              schema:
+                type: string
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+
+  /sessions/import:
+    post:
+      tags: [Planning Poker]
+      summary: Import session data
+      description: Create a session from exported data
+      operationId: importSession
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SessionImport'
+      responses:
+        '201':
+          description: Session imported
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+
+  # ==================== UTILITY ENDPOINTS ====================
+  /sizing-methods:
+    get:
+      tags: [Planning Poker]
+      summary: Get available sizing methods
+      description: List all supported estimation scales
+      operationId: getSizingMethods
+      responses:
+        '200':
+          description: Sizing methods
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SizingMethodInfo'
+
+  /health:
+    get:
+      tags: [Planning Poker]
+      summary: Health check
+      description: API health status
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "UP"
+                  timestamp:
+                    type: string
+                    format: date-time
+
+# ==================== COMPONENTS ====================
+components:
+  parameters:
+    SessionCode:
+      name: sessionCode
+      in: path
+      required: true
+      description: Unique 6-character session code
+      schema:
+        type: string
+        pattern: '^[A-Z0-9]{6}$'
+        example: "ABC123"
+    
+    StoryId:
+      name: storyId
+      in: path
+      required: true
+      description: Story identifier
+      schema:
+        type: integer
+        format: int64
+        example: 42
+
+  schemas:
+    # ========== SESSION SCHEMAS ==========
+    CreateSessionRequest:
+      type: object
+      required:
+        - name
+        - sizingMethod
+        - moderatorName
+      properties:
+        name:
+          type: string
+          minLength: 3
+          maxLength: 100
+          description: Session name
+          example: "Sprint 24 Planning"
+        description:
+          type: string
+          maxLength: 500
+          description: Session description
+        sizingMethod:
+          $ref: '#/components/schemas/SizingMethod'
+        customValues:
+          type: array
+          items:
+            type: string
+          description: Custom values (only for CUSTOM sizing method)
+          example: ["XS", "S", "M", "L", "XL"]
+        moderatorName:
+          type: string
+          minLength: 1
+          maxLength: 50
+          description: Name of the session moderator
+        moderatorAvatar:
+          type: string
+          description: Avatar identifier for moderator
+        settings:
+          $ref: '#/components/schemas/SessionSettings'
+
+    UpdateSessionRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 3
+          maxLength: 100
+        description:
+          type: string
+          maxLength: 500
+        settings:
+          $ref: '#/components/schemas/SessionSettings'
+
+    Session:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        sessionCode:
+          type: string
+          pattern: '^[A-Z0-9]{6}$'
+        name:
+          type: string
+        description:
+          type: string
+        sizingMethod:
+          $ref: '#/components/schemas/SizingMethod'
+        customValues:
+          type: array
+          items:
+            type: string
+        moderatorId:
+          type: integer
+          format: int64
+        currentStoryId:
+          type: integer
+          format: int64
+        votesRevealed:
+          type: boolean
+          default: false
+        isActive:
+          type: boolean
+        settings:
+          $ref: '#/components/schemas/SessionSettings'
+        statistics:
+          $ref: '#/components/schemas/SessionStatistics'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    SessionSettings:
+      type: object
+      properties:
+        autoReveal:
+          type: boolean
+          default: false
+          description: Automatically reveal when all users vote
+        timerEnabled:
+          type: boolean
+          default: false
+        timerDuration:
+          type: integer
+          description: Timer duration in seconds
+          minimum: 30
+          maximum: 3600
+          default: 300
+        allowChangeVote:
+          type: boolean
+          default: true
+          description: Allow users to change their votes
+        allowObservers:
+          type: boolean
+          default: true
+          description: Allow observers who don't vote
+        requireConfidence:
+          type: boolean
+          default: false
+          description: Require confidence level with votes
+
+    SessionStatistics:
+      type: object
+      properties:
+        totalStories:
+          type: integer
+        completedStories:
+          type: integer
+        activeUsers:
+          type: integer
+        averageVotingTime:
+          type: number
+          format: double
+          description: Average time to complete voting in seconds
+
+    JoinSessionRequest:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 50
+        avatar:
+          type: string
+          description: Avatar identifier
+        isObserver:
+          type: boolean
+          default: false
+          description: Join as observer (can't vote)
+
+    UserSession:
+      type: object
+      properties:
+        sessionCode:
+          type: string
+        userId:
+          type: integer
+          format: int64
+        user:
+          $ref: '#/components/schemas/User'
+        session:
+          $ref: '#/components/schemas/Session'
+
+    # ========== STORY SCHEMAS ==========
+    CreateStoryRequest:
+      type: object
+      required:
+        - title
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+          example: "User login functionality"
+        description:
+          type: string
+          maxLength: 2000
+          example: "As a user, I want to log in securely..."
+        acceptanceCriteria:
+          type: string
+          maxLength: 2000
+        tags:
+          type: array
+          items:
+            type: string
+          example: ["frontend", "security"]
+        priority:
+          type: string
+          enum: [LOW, MEDIUM, HIGH, CRITICAL]
+          default: MEDIUM
+
+    UpdateStoryRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+          maxLength: 2000
+        acceptanceCriteria:
+          type: string
+          maxLength: 2000
+        tags:
+          type: array
+          items:
+            type: string
+        priority:
+          type: string
+          enum: [LOW, MEDIUM, HIGH, CRITICAL]
+
+    Story:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        title:
+          type: string
+        description:
+          type: string
+        acceptanceCriteria:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        priority:
+          type: string
+          enum: [LOW, MEDIUM, HIGH, CRITICAL]
+        status:
+          $ref: '#/components/schemas/StoryStatus'
+        orderIndex:
+          type: integer
+          description: Position in backlog
+        finalEstimate:
+          type: string
+          description: Agreed estimate value
+        estimateNotes:
+          type: string
+        voteCount:
+          type: integer
+          description: Number of votes cast
+        consensus:
+          type: boolean
+          description: Whether all votes agree
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    # ========== VOTING SCHEMAS ==========
+    VoteRequest:
+      type: object
+      required:
+        - estimate
+      properties:
+        estimate:
+          type: string
+          description: Vote value (depends on sizing method)
+          example: "5"
+        confidence:
+          type: integer
+          minimum: 1
+          maximum: 5
+          description: Confidence level (1-5)
+          example: 4
+
+    Vote:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        storyId:
+          type: integer
+          format: int64
+        userId:
+          type: integer
+          format: int64
+        userName:
+          type: string
+        userAvatar:
+          type: string
+        estimate:
+          type: string
+        confidence:
+          type: integer
+          minimum: 1
+          maximum: 5
+        votedAt:
+          type: string
+          format: date-time
+
+    VoteReveal:
+      type: object
+      properties:
+        storyId:
+          type: integer
+          format: int64
+        votes:
+          type: array
+          items:
+            $ref: '#/components/schemas/Vote'
+        consensus:
+          type: boolean
+        averageEstimate:
+          type: number
+          format: double
+        medianEstimate:
+          type: string
+        recommendedEstimate:
+          type: string
+        distribution:
+          type: object
+          additionalProperties:
+            type: integer
+          description: Vote distribution map
+          example:
+            "3": 2
+            "5": 5
+            "8": 1
+
+    # ========== USER SCHEMAS ==========
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        avatar:
+          type: string
+        isObserver:
+          type: boolean
+        isModerator:
+          type: boolean
+        isActive:
+          type: boolean
+        hasVoted:
+          type: boolean
+          description: Has voted for current story
+        joinedAt:
+          type: string
+          format: date-time
+        lastSeenAt:
+          type: string
+          format: date-time
+
+    UpdateUserRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 50
+        avatar:
+          type: string
+
+    # ========== ANALYTICS SCHEMAS ==========
+    SessionAnalytics:
+      type: object
+      properties:
+        sessionCode:
+          type: string
+        duration:
+          type: integer
+          description: Session duration in minutes
+        totalStories:
+          type: integer
+        estimatedStories:
+          type: integer
+        totalVotes:
+          type: integer
+        participantCount:
+          type: integer
+        averageVotingTime:
+          type: number
+          format: double
+        consensusRate:
+          type: number
+          format: double
+          description: Percentage of stories with consensus
+        velocityMetrics:
+          type: object
+          properties:
+            totalStoryPoints:
+              type: number
+            averageStoryPoints:
+              type: number
+        participantActivity:
+          type: array
+          items:
+            type: object
+            properties:
+              userId:
+                type: integer
+                format: int64
+              userName:
+                type: string
+              votesCount:
+                type: integer
+              participationRate:
+                type: number
+                format: double
+
+    StoryAnalytics:
+      type: object
+      properties:
+        storyId:
+          type: integer
+          format: int64
+        title:
+          type: string
+        votingDuration:
+          type: integer
+          description: Time to complete voting in seconds
+        voteCount:
+          type: integer
+        consensus:
+          type: boolean
+        distribution:
+          type: object
+          additionalProperties:
+            type: integer
+        statistics:
+          type: object
+          properties:
+            mean:
+              type: number
+            median:
+              type: number
+            mode:
+              type: string
+            stdDeviation:
+              type: number
+            confidenceAverage:
+              type: number
+
+    # ========== EXPORT/IMPORT SCHEMAS ==========
+    SessionExport:
+      type: object
+      properties:
+        session:
+          $ref: '#/components/schemas/Session'
+        stories:
+          type: array
+          items:
+            $ref: '#/components/schemas/Story'
+        votes:
+          type: array
+          items:
+            $ref: '#/components/schemas/Vote'
+        users:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+        exportedAt:
+          type: string
+          format: date-time
+
+    SessionImport:
+      type: object
+      required:
+        - sessionData
+      properties:
+        sessionData:
+          $ref: '#/components/schemas/SessionExport'
+        generateNewCode:
+          type: boolean
+          default: true
+          description: Generate new session code
+
+    # ========== ENUM SCHEMAS ==========
+    SizingMethod:
+      type: string
+      enum:
+        - FIBONACCI
+        - T_SHIRT
+        - POWERS_OF_2
+        - LINEAR
+        - CUSTOM
+      description: |
+        - FIBONACCI: 0, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, ?, ☕, ∞
+        - T_SHIRT: XS, S, M, L, XL, XXL, ?, ☕, ∞
+        - POWERS_OF_2: 1, 2, 4, 8, 16, 32, 64, ?, ☕, ∞
+        - LINEAR: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, ?, ☕, ∞
+        - CUSTOM: User-defined values
+
+    StoryStatus:
+      type: string
+      enum:
+        - NOT_ESTIMATED
+        - IN_PROGRESS
+        - COMPLETED
+        - SKIPPED
+
+    SizingMethodInfo:
+      type: object
+      properties:
+        method:
+          $ref: '#/components/schemas/SizingMethod'
+        displayName:
+          type: string
+        values:
+          type: array
+          items:
+            type: string
+        icon:
+          type: string
+        description:
+          type: string
+
+    # ========== ERROR SCHEMAS ==========
+    Error:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        status:
+          type: integer
+        error:
+          type: string
+        message:
+          type: string
+        path:
+          type: string
+
+  responses:
+    BadRequest:
+      description: Invalid request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            timestamp: "2026-02-03T20:30:00Z"
+            status: 400
+            error: "Bad Request"
+            message: "Session name is required"
+            path: "/api/sessions"
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            timestamp: "2026-02-03T20:30:00Z"
+            status: 404
+            error: "Not Found"
+            message: "Session not found"
+            path: "/api/sessions/XYZ789"
+
+    Forbidden:
+      description: Access forbidden
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            timestamp: "2026-02-03T20:30:00Z"
+            status: 403
+            error: "Forbidden"
+            message: "Only moderator can perform this action"
+            path: "/api/sessions/ABC123"
+
+    TooManyRequests:
+      description: Rate limit exceeded
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            timestamp: "2026-02-03T20:30:00Z"
+            status: 429
+            error: "Too Many Requests"
+            message: "Rate limit exceeded. Try again in 60 seconds"
+            path: "/api/sessions"
