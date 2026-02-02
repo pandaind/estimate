@@ -1,0 +1,91 @@
+{
+  "id": "planning-poker-env",
+  "name": "Planning Poker Test Environment",
+  "values": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "sessionCode",
+      "value": "",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "sessionCode2",
+      "value": "",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "moderatorId",
+      "value": "",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "aliceUserId",
+      "value": "",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "bobUserId",
+      "value": "",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "charlieUserId",
+      "value": "",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "dianaUserId",
+      "value": "",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "observerId",
+      "value": "",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "story1Id",
+      "value": "",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "story2Id",
+      "value": "",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "story3Id",
+      "value": "",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "story4Id",
+      "value": "",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "story5Id",
+      "value": "",
+      "type": "default",
+      "enabled": true
+    }
+  ],
+  "_postman_variable_scope": "environment"
+}

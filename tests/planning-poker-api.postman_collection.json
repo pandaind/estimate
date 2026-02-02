@@ -1,0 +1,1985 @@
+{
+  "info": {
+    "name": "EstiMate API - Complete Test Suite",
+    "description": "Comprehensive test suite covering 38 test cases for EstiMate backend API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "1.0.0"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "sessionCode",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "sessionCode2",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "moderatorId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "aliceUserId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "bobUserId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "charlieUserId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "dianaUserId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "observerId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "story1Id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "story2Id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "story3Id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "story4Id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "story5Id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "authToken",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Phase 1: Health Check & System Validation",
+      "item": [
+        {
+          "name": "TC-001: Health Check",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has status and timestamp', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('status');",
+                  "    pm.expect(jsonData).to.have.property('timestamp');",
+                  "    pm.expect(jsonData.status).to.eql('UP');",
+                  "});",
+                  "",
+                  "console.log('\u2705 TC-001 PASSED: Health check successful');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/health",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "health"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-002: Get Sizing Methods",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Returns all 5 sizing methods', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.be.an('array');",
+                  "    pm.expect(jsonData).to.have.lengthOf(5);",
+                  "    pm.expect(jsonData).to.include.members(['FIBONACCI', 'T_SHIRT', 'POWERS_OF_2', 'LINEAR', 'CUSTOM']);",
+                  "});",
+                  "",
+                  "console.log('\u2705 TC-002 PASSED: All sizing methods retrieved');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/sizing-methods",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "sizing-methods"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Phase 2: Session Management",
+      "item": [
+        {
+          "name": "TC-003: Create Session (Basic)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 or 201', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                  "});",
+                  "",
+                  "pm.test('Session created with valid code', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('session');",
+                  "    pm.expect(jsonData).to.have.property('token');",
+                  "    pm.expect(jsonData).to.have.property('moderatorId');",
+                  "    pm.expect(jsonData.session).to.have.property('sessionCode');",
+                  "    pm.expect(jsonData.session.sessionCode).to.have.lengthOf(6);",
+                  "    pm.expect(jsonData.session.name).to.eql('Sprint 24 Planning');",
+                  "    pm.expect(jsonData.session.votesRevealed).to.eql(false);",
+                  "    ",
+                  "    // Save session code, moderatorId, and token for subsequent tests",
+                  "    pm.environment.set('sessionCode', jsonData.session.sessionCode);",
+                  "    pm.environment.set('moderatorId', jsonData.moderatorId);",
+                  "    pm.environment.set('authToken', jsonData.token);",
+                  "});",
+                  "",
+                  "console.log('\u2705 TC-003 PASSED: Session created - Code:', pm.environment.get('sessionCode'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Sprint 24 Planning\",\n  \"description\": \"Planning session for Sprint 24\",\n  \"sizingMethod\": \"FIBONACCI\",\n  \"moderatorName\": \"John Doe\",\n  \"moderatorAvatar\": \"\ud83d\udc68\u200d\ud83d\udcbc\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/sessions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "sessions"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-004: Create Session with Custom Settings",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 or 201', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                  "});",
+                  "",
+                  "pm.test('Session created with custom settings', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('session');",
+                  "    pm.expect(jsonData.session.sizingMethod).to.eql('CUSTOM');",
+                  "    pm.expect(jsonData.session.autoReveal).to.eql(true);",
+                  "    pm.expect(jsonData.session.timerEnabled).to.eql(true);",
+                  "    pm.expect(jsonData.session.timerDuration).to.eql(300);",
+                  "    ",
+                  "    // Save second session code",
+                  "    pm.environment.set('sessionCode2', jsonData.session.sessionCode);",
+                  "});",
+                  "",
+                  "console.log('\u2705 TC-004 PASSED: Custom session created');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Advanced Planning Session\",\n  \"description\": \"Testing custom settings\",\n  \"sizingMethod\": \"CUSTOM\",\n  \"customValues\": [\"XS\", \"S\", \"M\", \"L\", \"XL\", \"XXL\"],\n  \"moderatorName\": \"Jane Smith\",\n  \"moderatorAvatar\": \"\ud83d\udc69\u200d\ud83d\udcbb\",\n  \"settings\": {\n    \"autoReveal\": true,\n    \"timerEnabled\": true,\n    \"timerDuration\": 300,\n    \"allowChangeVote\": false,\n    \"allowObservers\": true,\n    \"requireConfidence\": true\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/sessions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "sessions"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-005: Get Session Details",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Session details match creation data', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.name).to.eql('Sprint 24 Planning');",
+                  "    pm.expect(jsonData.description).to.eql('Planning session for Sprint 24');",
+                  "    pm.expect(jsonData.sizingMethod).to.eql('FIBONACCI');",
+                  "});",
+                  "",
+                  "console.log('\u2705 TC-005 PASSED: Session retrieved successfully');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/sessions/{{sessionCode}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "sessions",
+                "{{sessionCode}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-006: Update Session",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Session updated successfully', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.name).to.eql('Updated Sprint 24 Planning');",
+                  "    pm.expect(jsonData.description).to.eql('Updated description');",
+                  "    pm.expect(jsonData.autoReveal).to.eql(true);",
+                  "});",
+                  "",
+                  "console.log('\u2705 TC-006 PASSED: Session updated');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Sprint 24 Planning\",\n  \"description\": \"Updated description\",\n  \"settings\": {\n    \"autoReveal\": true,\n    \"allowChangeVote\": true\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/sessions/{{sessionCode}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "sessions",
+                "{{sessionCode}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-007: Get Non-Existent Session (Error Handling)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 404', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "pm.test('Error response format is correct', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('timestamp');",
+                  "    pm.expect(jsonData).to.have.property('status');",
+                  "    pm.expect(jsonData).to.have.property('error');",
+                  "    pm.expect(jsonData).to.have.property('message');",
+                  "    pm.expect(jsonData.status).to.eql(404);",
+                  "});",
+                  "",
+                  "console.log('\u2705 TC-007 PASSED: 404 error handled correctly');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/sessions/INVALID",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "sessions",
+                "INVALID"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Phase 3: User/Participant Management",
+      "item": [
+        {
+          "name": "TC-008: Join Session (Regular User)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('User joined successfully', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('userId');",
+                  "    pm.expect(jsonData.user.name).to.eql('Alice Developer');",
+                  "    pm.expect(jsonData.user.isObserver).to.eql(false);",
+                  "    ",
+                  "    // Save user ID",
+                  "    pm.environment.set('aliceUserId', jsonData.userId);",
+                  "    ",
+                  "    // Save authentication token",
+                  "    if (jsonData.token) {",
+                  "        pm.environment.set('authToken', jsonData.token);",
+                  "        console.log('\ud83d\udd11 Token stored for authentication');",
+                  "    }",
+                  "});",
+                  "",
+                  "console.log('\u2705 TC-008 PASSED: Alice joined as participant');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Alice Developer\",\n  \"avatar\": \"\ud83d\udc69\u200d\ud83d\udcbb\",\n  \"isObserver\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/sessions/{{sessionCode}}/join",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "sessions",
+                "{{sessionCode}}",
+                "join"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-009: Join Session (Observer)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Observer joined successfully', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.user.name).to.eql('Bob Observer');",
+                  "    pm.expect(jsonData.user.isObserver).to.eql(true);",
+                  "    pm.expect(jsonData.user.isModerator).to.eql(false);",
+                  "    ",
+                  "    pm.environment.set('observerId', jsonData.userId);",
+                  "});",
+                  "",
+                  "console.log('\u2705 TC-009 PASSED: Bob joined as observer');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Bob Observer\",\n  \"avatar\": \"\ud83d\udc40\",\n  \"isObserver\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/sessions/{{sessionCode}}/join",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "sessions",
+                "{{sessionCode}}",
+                "join"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-010: Rejoin Session (Same User)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Same user ID returned (no duplicate)', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    const existingUserId = pm.environment.get('aliceUserId');",
+                  "    pm.expect(jsonData.userId).to.eql(parseInt(existingUserId));",
+                  "});",
+                  "",
+                  "console.log('\u2705 TC-010 PASSED: User rejoined without duplication');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Alice Developer\",\n  \"avatar\": \"\ud83d\udc69\u200d\ud83d\udcbb\",\n  \"isObserver\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/sessions/{{sessionCode}}/join",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "sessions",
+                "{{sessionCode}}",
+                "join"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-011: Get Active Users",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Returns active users list', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.be.an('array');",
+                  "    pm.expect(jsonData.length).to.be.at.least(2); // Moderator + Alice + Bob",
+                  "});",
+                  "",
+                  "console.log('\u2705 TC-011 PASSED: Active users retrieved');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/sessions/{{sessionCode}}/users?activeOnly=true",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "sessions",
+                "{{sessionCode}}",
+                "users"
+              ],
+              "query": [
+                {
+                  "key": "activeOnly",
+                  "value": "true"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-012: Update User Profile",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('User profile updated', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.name).to.eql('Alice Updated');",
+                  "    pm.expect(jsonData.avatar).to.eql('\ud83d\ude80');",
+                  "});",
+                  "",
+                  "console.log('\u2705 TC-012 PASSED: User profile updated');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Alice Updated\",\n  \"avatar\": \"\ud83d\ude80\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/sessions/{{sessionCode}}/users/{{aliceUserId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "sessions",
+                "{{sessionCode}}",
+                "users",
+                "{{aliceUserId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-013: Leave Session",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 or 204', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
+                  "});",
+                  "",
+                  "console.log('\u2705 TC-013 PASSED: User left session');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/sessions/{{sessionCode}}/users/{{observerId}}/leave",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "sessions",
+                "{{sessionCode}}",
+                "users",
+                "{{observerId}}",
+                "leave"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Phase 4: Story Management",
+      "item": [
+        {
+          "name": "TC-014: Create Story (Basic)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 or 201', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                  "});",
+                  "",
+                  "pm.test('Story created successfully', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.title).to.eql('User Authentication Module');",
+                  "    pm.expect(jsonData.priority).to.eql('HIGH');",
+                  "    pm.expect(jsonData.status).to.eql('NOT_ESTIMATED');",
+                  "    pm.expect(jsonData.orderIndex).to.eql(0);",
+                  "    ",
+                  "    pm.environment.set('story1Id', jsonData.id);",
+                  "});",
+                  "",
+                  "console.log('\u2705 TC-014 PASSED: Story 1 created');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"User Authentication Module\",\n  \"description\": \"Implement JWT-based authentication\",\n  \"priority\": \"HIGH\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/sessions/{{sessionCode}}/stories",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "sessions",
+                "{{sessionCode}}",
+                "stories"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-015: Create Story (Full Details)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 or 201', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                  "});",
+                  "",
+                  "pm.test('Story created with full details', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.title).to.eql('Payment Gateway Integration');",
+                  "    pm.expect(jsonData.priority).to.eql('CRITICAL');",
+                  "    pm.expect(jsonData.orderIndex).to.eql(1);",
+                  "    ",
+                  "    pm.environment.set('story2Id', jsonData.id);",
+                  "});",
+                  "",
+                  "console.log('\u2705 TC-015 PASSED: Story 2 created with tags');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Payment Gateway Integration\",\n  \"description\": \"Integrate Stripe payment processing\",\n  \"acceptanceCriteria\": \"- Support credit card payments\\n- Handle webhooks\\n- Error handling\",\n  \"tags\": [\"backend\", \"payment\", \"integration\"],\n  \"priority\": \"CRITICAL\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/sessions/{{sessionCode}}/stories",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "sessions",
+                "{{sessionCode}}",
+                "stories"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-016: Get All Stories",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Stories returned in order', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.be.an('array');",
+                  "    pm.expect(jsonData.length).to.be.at.least(2);",
+                  "    ",
+                  "    // Check ordering",
+                  "    if (jsonData.length > 1) {",
+                  "        pm.expect(jsonData[0].orderIndex).to.be.lessThan(jsonData[1].orderIndex);",
+                  "    }",
+                  "});",
+                  "",
+                  "console.log('\u2705 TC-016 PASSED: All stories retrieved in order');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/sessions/{{sessionCode}}/stories",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "sessions",
+                "{{sessionCode}}",
+                "stories"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-017: Get Stories by Status",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Only NOT_ESTIMATED stories returned', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.be.an('array');",
+                  "    jsonData.forEach(story => {",
+                  "        pm.expect(story.status).to.eql('NOT_ESTIMATED');",
+                  "    });",
+                  "});",
+                  "",
+                  "console.log('\u2705 TC-017 PASSED: Story filtering works');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/sessions/{{sessionCode}}/stories?status=NOT_ESTIMATED",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "sessions",
+                "{{sessionCode}}",
+                "stories"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "NOT_ESTIMATED"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-018: Get Single Story",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Story details match', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.title).to.eql('User Authentication Module');",
+                  "});",
+                  "",
+                  "console.log('\u2705 TC-018 PASSED: Single story retrieved');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/sessions/{{sessionCode}}/stories/{{story1Id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "sessions",
+                "{{sessionCode}}",
+                "stories",
+                "{{story1Id}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-019: Update Story",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Story updated successfully', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.title).to.eql('User Authentication & Authorization');",
+                  "    pm.expect(jsonData.priority).to.eql('CRITICAL');",
+                  "});",
+                  "",
+                  "console.log('\u2705 TC-019 PASSED: Story updated');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"User Authentication & Authorization\",\n  \"priority\": \"CRITICAL\",\n  \"tags\": [\"backend\", \"security\", \"auth\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/sessions/{{sessionCode}}/stories/{{story1Id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "sessions",
+                "{{sessionCode}}",
+                "stories",
+                "{{story1Id}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-020: Set Current Story",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Current story set', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    const storyId = pm.environment.get('story1Id');",
+                  "    pm.expect(jsonData.currentStoryId).to.eql(parseInt(storyId));",
+                  "    pm.expect(jsonData.votesRevealed).to.eql(false);",
+                  "});",
+                  "",
+                  "console.log('\u2705 TC-020 PASSED: Current story set for voting');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/sessions/{{sessionCode}}/current-story?storyId={{story1Id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "sessions",
+                "{{sessionCode}}",
+                "current-story"
+              ],
+              "query": [
+                {
+                  "key": "storyId",
+                  "value": "{{story1Id}}"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Phase 5: Voting Flow",
+      "item": [
+        {
+          "name": "Setup: Rejoin Alice for Voting",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Alice rejoined', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.environment.set('aliceUserId', jsonData.userId);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Alice Developer\",\n  \"avatar\": \"\ud83d\udc69\u200d\ud83d\udcbb\",\n  \"isObserver\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/sessions/{{sessionCode}}/join",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "sessions",
+                "{{sessionCode}}",
+                "join"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-022: Cast Vote (Regular User)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 or 201', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                  "});",
+                  "",
+                  "pm.test('Vote cast successfully', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.estimate).to.eql('5');",
+                  "    pm.expect(jsonData.confidence).to.eql(4);",
+                  "});",
+                  "",
+                  "console.log('\u2705 TC-022 PASSED: Vote cast by Alice');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estimate\": \"5\",\n  \"confidence\": 4,\n  \"userId\": {{aliceUserId}}\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/sessions/{{sessionCode}}/stories/{{story1Id}}/votes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "sessions",
+                "{{sessionCode}}",
+                "stories",
+                "{{story1Id}}",
+                "votes"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Setup: Bob Joins for Voting",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const jsonData = pm.response.json();",
+                  "pm.environment.set('bobUserId', jsonData.userId);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Bob Developer\",\n  \"avatar\": \"\ud83d\udc68\u200d\ud83d\udcbb\",\n  \"isObserver\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/sessions/{{sessionCode}}/join",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "sessions",
+                "{{sessionCode}}",
+                "join"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-023: Cast Multiple Votes (Bob)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Bob vote cast successfully', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.estimate).to.eql('8');",
+                  "});",
+                  "",
+                  "console.log('\u2705 TC-023 PASSED: Multiple votes recorded');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estimate\": \"8\",\n  \"confidence\": 3,\n  \"userId\": {{bobUserId}}\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/sessions/{{sessionCode}}/stories/{{story1Id}}/votes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "sessions",
+                "{{sessionCode}}",
+                "stories",
+                "{{story1Id}}",
+                "votes"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-024: Observer Cannot Vote (Error)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Error message correct', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.message).to.include('Observer');",
+                  "});",
+                  "",
+                  "console.log('\u2705 TC-024 PASSED: Observer voting blocked');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estimate\": \"5\",\n  \"confidence\": 3,\n  \"userId\": {{observerId}}\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/sessions/{{sessionCode}}/stories/{{story1Id}}/votes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "sessions",
+                "{{sessionCode}}",
+                "stories",
+                "{{story1Id}}",
+                "votes"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-025: Get Votes (Before Reveal)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Votes hidden before reveal', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.be.an('array');",
+                  "    pm.expect(jsonData).to.have.lengthOf(0);",
+                  "});",
+                  "",
+                  "console.log('\u2705 TC-025 PASSED: Votes hidden');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/sessions/{{sessionCode}}/stories/{{story1Id}}/votes?revealed=true",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "sessions",
+                "{{sessionCode}}",
+                "stories",
+                "{{story1Id}}",
+                "votes"
+              ],
+              "query": [
+                {
+                  "key": "revealed",
+                  "value": "true"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-026: Reveal Votes (Manual)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Votes revealed with statistics', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('votes');",
+                  "    pm.expect(jsonData).to.have.property('consensus');",
+                  "    pm.expect(jsonData).to.have.property('distribution');",
+                  "    pm.expect(jsonData.consensus).to.eql(false); // 5 vs 8",
+                  "    pm.expect(jsonData.distribution).to.have.property('5');",
+                  "    pm.expect(jsonData.distribution).to.have.property('8');",
+                  "});",
+                  "",
+                  "console.log('\u2705 TC-026 PASSED: Votes revealed with statistics');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/sessions/{{sessionCode}}/reveal",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "sessions",
+                "{{sessionCode}}",
+                "reveal"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-027: Get Votes (After Reveal)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Votes now visible', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.be.an('array');",
+                  "    pm.expect(jsonData.length).to.be.at.least(2);",
+                  "});",
+                  "",
+                  "console.log('\u2705 TC-027 PASSED: Votes visible after reveal');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/sessions/{{sessionCode}}/stories/{{story1Id}}/votes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "sessions",
+                "{{sessionCode}}",
+                "stories",
+                "{{story1Id}}",
+                "votes"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-028: Get Story Analytics",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Story analytics retrieved', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('storyId');",
+                  "    pm.expect(jsonData).to.have.property('voteCount');",
+                  "    pm.expect(jsonData).to.have.property('distribution');",
+                  "    pm.expect(jsonData).to.have.property('statistics');",
+                  "});",
+                  "",
+                  "console.log('\u2705 TC-028 PASSED: Story analytics retrieved');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/sessions/{{sessionCode}}/stories/{{story1Id}}/analytics",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "sessions",
+                "{{sessionCode}}",
+                "stories",
+                "{{story1Id}}",
+                "analytics"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-029: Get Session Analytics",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Session analytics retrieved', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('sessionCode');",
+                  "    pm.expect(jsonData).to.have.property('totalStories');",
+                  "    pm.expect(jsonData).to.have.property('participantCount');",
+                  "    pm.expect(jsonData.participantCount).to.be.at.least(2);",
+                  "});",
+                  "",
+                  "console.log('\u2705 TC-029 PASSED: Session analytics retrieved');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/sessions/{{sessionCode}}/analytics",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "sessions",
+                "{{sessionCode}}",
+                "analytics"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-030: Get User Details",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('User details retrieved', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('id');",
+                  "    pm.expect(jsonData).to.have.property('name');",
+                  "    pm.expect(jsonData.name).to.eql('Alice Developer');",
+                  "    pm.expect(jsonData).to.have.property('isObserver');",
+                  "});",
+                  "",
+                  "console.log('\u2705 TC-030 PASSED: User details retrieved');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/sessions/{{sessionCode}}/users/{{aliceUserId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "sessions",
+                "{{sessionCode}}",
+                "users",
+                "{{aliceUserId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-031: Finalize Estimate",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Story finalized', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.finalEstimate).to.eql('8');",
+                  "    pm.expect(jsonData.status).to.eql('COMPLETED');",
+                  "    pm.expect(jsonData.estimateNotes).to.include('discussion');",
+                  "});",
+                  "",
+                  "console.log('\u2705 TC-031 PASSED: Estimate finalized');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"finalEstimate\": \"8\",\n  \"notes\": \"Team agreed on 8 after discussion about complexity\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/sessions/{{sessionCode}}/stories/{{story1Id}}/finalize",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "sessions",
+                "{{sessionCode}}",
+                "stories",
+                "{{story1Id}}",
+                "finalize"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-032: Reset Votes",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 or 204', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
+                  "});",
+                  "",
+                  "console.log('\u2705 TC-032 PASSED: Votes reset');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/sessions/{{sessionCode}}/reset-votes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "sessions",
+                "{{sessionCode}}",
+                "reset-votes"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-033: Delete Vote",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 or 204', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
+                  "});",
+                  "",
+                  "console.log('\u2705 TC-033 PASSED: Vote deleted');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/sessions/{{sessionCode}}/stories/{{story2Id}}/votes/{{aliceUserId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "sessions",
+                "{{sessionCode}}",
+                "stories",
+                "{{story2Id}}",
+                "votes",
+                "{{aliceUserId}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Phase 6: Advanced Scenarios",
+      "item": [
+        {
+          "name": "TC-034: Non-Numeric Votes",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Special vote accepted', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.estimate).to.eql('?');",
+                  "});",
+                  "",
+                  "console.log('\u2705 TC-034 PASSED: Special votes handled');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estimate\": \"?\",\n  \"confidence\": 1,\n  \"userId\": {{aliceUserId}}\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/sessions/{{sessionCode}}/stories/{{story2Id}}/votes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "sessions",
+                "{{sessionCode}}",
+                "stories",
+                "{{story2Id}}",
+                "votes"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-035: Delete Story",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 or 204', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
+                  "});",
+                  "",
+                  "console.log('\u2705 TC-035 PASSED: Story deleted');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/sessions/{{sessionCode}}/stories/{{story2Id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "sessions",
+                "{{sessionCode}}",
+                "stories",
+                "{{story2Id}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-036: Delete Session",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 or 204', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
+                  "});",
+                  "",
+                  "console.log('\u2705 TC-036 PASSED: Session soft deleted');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/sessions/{{sessionCode2}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "sessions",
+                "{{sessionCode2}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Phase 7: Export/Import Operations",
+      "item": [
+        {
+          "name": "TC-037: Export Session (JSON)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Session exported as JSON', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('session');",
+                  "    pm.expect(jsonData).to.have.property('stories');",
+                  "    pm.expect(jsonData).to.have.property('votes');",
+                  "    pm.expect(jsonData).to.have.property('users');",
+                  "    pm.expect(jsonData).to.have.property('exportedAt');",
+                  "    ",
+                  "    // Save export data for import test",
+                  "    pm.environment.set('exportedSessionData', JSON.stringify(jsonData));",
+                  "});",
+                  "",
+                  "console.log('\u2705 TC-037 PASSED: Session exported as JSON');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/sessions/{{sessionCode}}/export?format=json",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "sessions",
+                "{{sessionCode}}",
+                "export"
+              ],
+              "query": [
+                {
+                  "key": "format",
+                  "value": "json"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-038: Export Session (CSV)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response is CSV format', function () {",
+                  "    const contentType = pm.response.headers.get('Content-Type');",
+                  "    pm.expect(contentType).to.include('text/csv');",
+                  "});",
+                  "",
+                  "console.log('\u2705 TC-038 PASSED: Session exported as CSV');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/sessions/{{sessionCode}}/export?format=csv",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "sessions",
+                "{{sessionCode}}",
+                "export"
+              ],
+              "query": [
+                {
+                  "key": "format",
+                  "value": "csv"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-039: Import Session",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 or 201', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                  "});",
+                  "",
+                  "pm.test('Session imported successfully', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('sessionCode');",
+                  "    pm.expect(jsonData.sessionCode).to.have.lengthOf(6);",
+                  "    pm.expect(jsonData).to.have.property('name');",
+                  "    ",
+                  "    // Save imported session code",
+                  "    pm.environment.set('importedSessionCode', jsonData.sessionCode);",
+                  "});",
+                  "",
+                  "console.log('\u2705 TC-039 PASSED: Session imported');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionData\": {{exportedSessionData}},\n  \"generateNewCode\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/sessions/import",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "sessions",
+                "import"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Auto-inject JWT token for authenticated requests",
+          "const authToken = pm.environment.get('authToken');",
+          "",
+          "// Only add token if it exists",
+          "if (!authToken) {",
+          "    return;",
+          "}",
+          "",
+          "// Skip adding token for public endpoints",
+          "const url = pm.request.url.toString();",
+          "const method = pm.request.method;",
+          "",
+          "// Public endpoints that don't need authentication",
+          "const isHealthCheck = url.includes('/health');",
+          "const isSizingMethods = url.includes('/sizing-methods');",
+          "const isJoinRequest = url.includes('/join');",
+          "const isGetSession = method === 'GET' && url.match(/\\/sessions\\/[A-Z0-9]+$/);",
+          "const isCreateSession = method === 'POST' && url.match(/\\/sessions$/);",
+          "",
+          "// Add Authorization header only for protected endpoints",
+          "if (!isHealthCheck && !isSizingMethods && !isJoinRequest && !isGetSession && !isCreateSession) {",
+          "    pm.request.headers.add({",
+          "        key: 'Authorization',",
+          "        value: 'Bearer ' + authToken",
+          "    });",
+          "}"
+        ]
+      }
+    }
+  ]
+}

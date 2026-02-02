@@ -1,0 +1,23 @@
+{
+  "name": "planning-poker-newman-tests",
+  "version": "1.0.0",
+  "description": "Newman test suite for Planning Poker API",
+  "scripts": {
+    "test": "newman run planning-poker-api.postman_collection.json -e environment.json --reporters cli,json,html --reporter-html-export ./reports/test-report.html --reporter-json-export ./reports/test-report.json",
+    "test:verbose": "newman run planning-poker-api.postman_collection.json -e environment.json --reporters cli,json,html --reporter-html-export ./reports/test-report.html --reporter-json-export ./reports/test-report.json --verbose",
+    "test:ci": "newman run planning-poker-api.postman_collection.json -e environment.json --reporters cli,json --reporter-json-export ./reports/test-report.json --bail",
+    "install-newman": "npm install -g newman newman-reporter-html"
+  },
+  "keywords": [
+    "newman",
+    "postman",
+    "api-testing",
+    "planning-poker"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "newman": "^6.1.1",
+    "newman-reporter-html": "^1.0.5"
+  }
+}
