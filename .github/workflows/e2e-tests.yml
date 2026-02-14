@@ -1,0 +1,96 @@
+name: E2E Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  playwright-tests:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        project: [chromium, firefox, webkit]
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: |
+          frontend/package-lock.json
+          e2e-tests/package-lock.json
+    
+    - name: Setup Java
+      uses: actions/setup-java@v4
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+        cache: 'maven'
+    
+    - name: Install Frontend Dependencies
+      working-directory: ./frontend
+      run: npm ci
+    
+    - name: Install E2E Test Dependencies
+      working-directory: ./e2e-tests
+      run: npm ci
+    
+    - name: Install Playwright Browsers
+      working-directory: ./e2e-tests
+      run: npx playwright install --with-deps ${{ matrix.project }}
+    
+    - name: Build Backend
+      working-directory: ./backend
+      run: mvn clean package -DskipTests
+    
+    - name: Start Backend
+      working-directory: ./backend
+      run: |
+        java -jar target/*.jar &
+        echo $! > backend.pid
+        # Wait for backend to be ready
+        timeout 60 bash -c 'until curl -f http://localhost:8080/actuator/health; do sleep 2; done'
+    
+    - name: Start Frontend
+      working-directory: ./frontend
+      run: |
+        npm run dev &
+        echo $! > frontend.pid
+        # Wait for frontend to be ready
+        timeout 60 bash -c 'until curl -f http://localhost:5173; do sleep 2; done'
+    
+    - name: Run Playwright Tests
+      working-directory: ./e2e-tests
+      run: npx playwright test --project=${{ matrix.project }}
+      env:
+        CI: true
+    
+    - name: Upload Test Results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: playwright-report-${{ matrix.project }}
+        path: e2e-tests/playwright-report/
+        retention-days: 30
+    
+    - name: Upload Test Screenshots
+      uses: actions/upload-artifact@v4
+      if: failure()
+      with:
+        name: playwright-screenshots-${{ matrix.project }}
+        path: e2e-tests/test-results/
+        retention-days: 7
+    
+    - name: Stop Services
+      if: always()
+      run: |
+        [ -f frontend/frontend.pid ] && kill $(cat frontend/frontend.pid) || true
+        [ -f backend/backend.pid ] && kill $(cat backend/backend.pid) || true
