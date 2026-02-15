@@ -17,12 +17,46 @@
 - [ ] PDF export for session summaries
 
 ## 🎨 UI/UX Enhancements
-- [ ] Mobile-responsive improvements
 - [ ] Keyboard shortcuts for power users
 - [ ] Accessibility (WCAG 2.1) compliance
 - [ ] Customizable themes beyond dark/light
 - [ ] User avatar support
 - [ ] Enhanced tutorial with interactive walkthrough
+
+### 📱 Mobile Optimization & Responsive Design
+**Current Status**: Desktop-optimized only. Mobile testing disabled in Playwright config.
+
+**Phase 1: Mobile-Responsive Layout**
+- [ ] Responsive grid system for all screen sizes (320px - 1920px)
+- [ ] Touch-friendly UI components (min 44x44px touch targets)
+- [ ] Mobile-optimized navigation (hamburger menu, bottom nav)
+- [ ] Responsive typography and spacing
+- [ ] Viewport meta tag optimization
+- [ ] Orientation change handling (portrait/landscape)
+
+**Phase 2: Mobile-Specific Features**
+- [ ] Swipe gestures for navigation (next/previous story, tab switching)
+- [ ] Pull-to-refresh for session updates
+- [ ] Mobile-optimized estimation cards (larger, touch-friendly)
+- [ ] Bottom sheet modals instead of centered popups
+- [ ] Sticky headers/footers for better mobile UX
+- [ ] Mobile-optimized analytics charts (responsive charts)
+
+**Phase 3: Performance & PWA**
+- [ ] Service worker for offline support
+- [ ] App manifest for "Add to Home Screen"
+- [ ] Lazy loading images and components
+- [ ] Touch event optimization (prevent double-tap zoom)
+- [ ] Reduced motion support for accessibility
+- [ ] Mobile bandwidth optimization
+
+**Phase 4: Testing & QA**
+- [ ] Enable Mobile Chrome testing in Playwright (Pixel 5 viewport)
+- [ ] Enable Mobile Safari testing in Playwright (iPhone 12 viewport)
+- [ ] Cross-device testing (phones, tablets, phablets)
+- [ ] Real device testing (iOS Safari, Android Chrome)
+- [ ] Mobile accessibility audit
+- [ ] Performance testing on 3G/4G networks
 
 ## 🔄 Real-time Features
 - [ ] Live participant cursor tracking
@@ -44,6 +78,15 @@
 - [ ] Async voting mode (vote without real-time presence)
 - [ ] Multiple voting rounds per story
 - [ ] Story dependencies visualization
+
+### Story Management
+- [ ] Edit existing stories (modify title/description after creation)
+- [ ] Delete stories from session
+- [ ] Navigate between stories (Previous/Next buttons)
+- [ ] Story reordering via drag-and-drop
+
+### Voting Controls
+- [ ] "New Round" button to reset current voting session globally (different from per-story Revote)
 
 ## 🔧 Technical Improvements
 - [ ] Production database migration (PostgreSQL/MySQL)
@@ -80,4 +123,4 @@
 - 🟢 Low Priority
 - 💡 Nice to Have
 
-Last Updated: February 14, 2026
+Last Updated: February 15, 2026

@@ -37,7 +37,7 @@ npm install && npm run dev
 ```
 ├── backend/          # Spring Boot API
 ├── frontend/         # React UI
-├── tests/            # Newman API tests
+├── api-testing/      # Newman API tests
 └── e2e-tests/        # Playwright E2E tests
 ```
 
@@ -53,7 +53,7 @@ npm install && npm run dev
 
 **API Tests (Newman/Postman):**
 ```bash
-cd tests
+cd api-testing
 ./run-tests.sh
 ```
 
@@ -68,7 +68,7 @@ cd e2e-tests
 - [Future Features & Roadmap](FUTURE_FEATURES.md)
 - [Backend Documentation](backend/README.md)
 - [Frontend Documentation](frontend/README.md)
-- [API Testing Guide](tests/README.md)
+- [API Testing Guide](api-testing/README.md)
 - [E2E Testing Guide](e2e-tests/README.md)
 
 ## License

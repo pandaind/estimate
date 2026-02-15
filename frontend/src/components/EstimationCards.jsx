@@ -126,6 +126,8 @@ const EstimationCards = ({ session, currentStory, userName, userId, isModerator 
               key={value}
               onClick={() => handleCardSelect(value)}
               disabled={isSubmitting || !canVote}
+              aria-label={`Vote ${value} points`}
+              role="button"
               className={`relative min-h-[140px] flex flex-col items-center justify-center text-2xl font-bold rounded-xl border-2 transition-all ${
                 isSelected 
                   ? 'border-blue-600 bg-blue-50 dark:bg-blue-950 scale-105 shadow-lg' 
@@ -154,7 +156,7 @@ const EstimationCards = ({ session, currentStory, userName, userId, isModerator 
       </div>
 
       {selectedCard && (
-        <div className="text-center p-6 bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 rounded-xl">
+        <div className="text-center p-6 bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 rounded-xl" role="status" aria-live="polite">
           <div className="text-green-800 dark:text-green-200 text-lg">
             ✅ You voted <strong>{selectedCard}</strong> with {confidence}⭐ confidence
           </div>

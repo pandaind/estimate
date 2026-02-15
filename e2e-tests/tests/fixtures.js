@@ -11,17 +11,29 @@ export const test = base.extend({
    */
   session: async ({ page }, use) => {
     // Setup: Create a session
-    await page.goto('/');
+    await page.goto('/', { waitUntil: 'networkidle' });
+    // Wait for the landing page to load and click the "Create Session" button
+    await page.waitForSelector('button:has-text("Create Session")', { state: 'visible' });
+    await page.click('button:has-text("Create Session")');
+    await page.waitForSelector('[name="sessionName"]', { state: 'visible' });
     await page.fill('[name="sessionName"]', 'Fixture Test Session');
     await page.fill('[name="facilitatorName"]', 'Test Facilitator');
-    await page.click('button:has-text("Create Session")');
-    await page.waitForURL(/\/session\/.+/);
     
-    const sessionUrl = page.url();
-    const sessionId = sessionUrl.split('/').pop();
+    // Enable moderator voting
+    await page.check('#moderatorCanVote');
+    await page.waitForTimeout(200);
+    
+    await page.click('button:has-text("Create Session")');
+    
+    // Wait for session view to load (app uses state-based routing, not URL routing)
+    await page.waitForSelector('button:has-text("Leave")', { state: 'visible', timeout: 10000 });
+    
+    // Get session code from the button
+    const sessionCodeButton = page.locator('span:has-text("Code:")').locator('..').locator('button').locator('span').first();
+    const sessionCode = await sessionCodeButton.textContent();
     
     // Provide the session info to the test
-    await use({ sessionId, sessionUrl });
+    await use({ sessionCode: sessionCode.trim() });
     
     // Teardown: Could add cleanup logic here if needed
   },
@@ -29,42 +41,72 @@ export const test = base.extend({
   /**
    * Multi-user fixture - creates a session with multiple participants
    */
-  multiUser: async ({ context, page }, use) => {
+  multiUser: async ({ browser }, use) => {
+    // Create separate context for facilitator
+    const facilitatorContext = await browser.newContext();
+    const page = await facilitatorContext.newPage();
+    
     // Create main session
-    await page.goto('/');
+    await page.goto('/', { waitUntil: 'networkidle' });
+    // Wait for the landing page to load and click the "Create Session" button
+    await page.waitForSelector('button:has-text("Create Session")', { state: 'visible' });
+    await page.click('button:has-text("Create Session")');
+    await page.waitForSelector('[name="sessionName"]', { state: 'visible' });
     await page.fill('[name="sessionName"]', 'Multi User Session');
     await page.fill('[name="facilitatorName"]', 'Facilitator');
+    
+    // Enable moderator voting
+    await page.check('#moderatorCanVote');
+    await page.waitForTimeout(200);
+    
     await page.click('button:has-text("Create Session")');
-    await page.waitForURL(/\/session\/.+/);
     
-    const sessionId = page.url().split('/').pop();
+    // Wait for session view to load
+    await page.waitForSelector('button:has-text("Leave")', { state: 'visible', timeout: 10000 });
     
-    // Create participant pages
-    const participant1 = await context.newPage();
-    await participant1.goto('/');
-    await participant1.fill('[name="sessionId"]', sessionId);
+    // Get session code from the button
+    const sessionCodeButton = page.locator('span:has-text("Code:")').locator('..').locator('button').locator('span').first();
+    const sessionCode = await sessionCodeButton.textContent();
+    
+    // Create separate contexts for participants to isolate localStorage
+    const participant1Context = await browser.newContext();
+    const participant1 = await participant1Context.newPage();
+    await participant1.goto('/', { waitUntil: 'domcontentloaded', timeout: 30000 });
+    await participant1.waitForTimeout(500); // Wait for page to settle
+    // Wait for the landing page to load and click the "Join Session" button
+    await participant1.waitForSelector('button:has-text("Join Session")', { state: 'visible', timeout: 15000 });
+    await participant1.click('button:has-text("Join Session")');
+    await participant1.waitForSelector('[name="sessionId"]', { state: 'visible' });
+    await participant1.fill('[name="sessionId"]', sessionCode.trim());
     await participant1.fill('[name="userName"]', 'Developer 1');
     await participant1.click('button:has-text("Join Session")');
-    await participant1.waitForURL(/\/session\/.+/);
+    await participant1.waitForSelector('button:has-text("Leave")', { state: 'visible', timeout: 10000 });
     
-    const participant2 = await context.newPage();
-    await participant2.goto('/');
-    await participant2.fill('[name="sessionId"]', sessionId);
+    const participant2Context = await browser.newContext();
+    const participant2 = await participant2Context.newPage();
+    await participant2.goto('/', { waitUntil: 'domcontentloaded', timeout: 30000 });
+    await participant2.waitForTimeout(500); // Wait for page to settle
+    // Wait for the landing page to load and click the "Join Session" button
+    await participant2.waitForSelector('button:has-text("Join Session")', { state: 'visible', timeout: 15000 });
+    await participant2.click('button:has-text("Join Session")');
+    await participant2.waitForSelector('[name="sessionId"]', { state: 'visible' });
+    await participant2.fill('[name="sessionId"]', sessionCode.trim());
     await participant2.fill('[name="userName"]', 'Developer 2');
     await participant2.click('button:has-text("Join Session")');
-    await participant2.waitForURL(/\/session\/.+/);
+    await participant2.waitForSelector('button:has-text("Leave")', { state: 'visible', timeout: 10000 });
     
     // Provide all pages to the test
     await use({
       facilitator: page,
       participant1,
       participant2,
-      sessionId
+      sessionCode: sessionCode.trim()
     });
     
-    // Cleanup
-    await participant1.close();
-    await participant2.close();
+    // Cleanup - close contexts which will also close their pages
+    await facilitatorContext.close();
+    await participant1Context.close();
+    await participant2Context.close();
   },
 });
 

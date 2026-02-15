@@ -181,8 +181,12 @@ const StoryList = ({ session, onStorySelected, currentStory, userName, isModerat
         <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6">
           <form onSubmit={handleCreateStory} className="space-y-4">
             <div>
+              <label htmlFor="story-title" className="sr-only">Story title</label>
               <input
                 type="text"
+                id="story-title"
+                name="storyTitle"
+                aria-label="Story title"
                 value={newStory.title}
                 onChange={(e) => setNewStory({ ...newStory, title: e.target.value })}
                 placeholder="Story title"
@@ -191,7 +195,11 @@ const StoryList = ({ session, onStorySelected, currentStory, userName, isModerat
               />
             </div>
             <div>
+              <label htmlFor="story-description" className="sr-only">Story description</label>
               <textarea
+                id="story-description"
+                name="storyDescription"
+                aria-label="Story description"
                 value={newStory.description}
                 onChange={(e) => setNewStory({ ...newStory, description: e.target.value })}
                 placeholder="Story description (optional)"

@@ -56,11 +56,14 @@ const CreateSession = ({ onSessionCreated }) => {
 
       <form onSubmit={handleSubmit} className="space-y-8">
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+          <label htmlFor="session-name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
             Session Name
           </label>
           <input
             type="text"
+            id="session-name"
+            name="sessionName"
+            aria-label="Session name"
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -70,11 +73,14 @@ const CreateSession = ({ onSessionCreated }) => {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+          <label htmlFor="facilitator-name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
             Your Name
           </label>
           <input
             type="text"
+            id="facilitator-name"
+            name="facilitatorName"
+            aria-label="Facilitator name"
             value={formData.moderatorName}
             onChange={(e) => setFormData({ ...formData, moderatorName: e.target.value })}
             className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"

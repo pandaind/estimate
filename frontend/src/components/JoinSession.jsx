@@ -41,11 +41,14 @@ const JoinSession = ({ onSessionJoined }) => {
 
       <form onSubmit={handleSubmit} className="space-y-8">
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+          <label htmlFor="session-code" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
             Session Code
           </label>
           <input
             type="text"
+            id="session-code"
+            name="sessionId"
+            aria-label="Session code"
             value={formData.sessionCode}
             onChange={(e) => setFormData({ ...formData, sessionCode: e.target.value.toUpperCase() })}
             className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-center font-mono text-xl tracking-widest"
@@ -56,11 +59,14 @@ const JoinSession = ({ onSessionJoined }) => {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+          <label htmlFor="user-name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
             Your Name
           </label>
           <input
             type="text"
+            id="user-name"
+            name="userName"
+            aria-label="Your name"
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"

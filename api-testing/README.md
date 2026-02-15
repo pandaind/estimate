@@ -223,7 +223,7 @@ jobs:
         if: always()
         with:
           name: test-reports
-          path: tests/reports/
+          path: api-testing/reports/
 ```
 
 ## 🎉 Success Criteria

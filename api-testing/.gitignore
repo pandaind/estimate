@@ -1,0 +1,10 @@
+# Newman/Postman test reports
+reports/*.json
+reports/*.html
+reports/*.xml
+
+# Keep reports directory structure
+!reports/.gitkeep
+
+# node_modules if tests have dependencies
+node_modules/
