@@ -52,7 +52,7 @@ const SessionMetrics = ({ analytics }) => {
   return (
     <div className="space-y-6">
       {/* Key Metrics Grid */}
-      <div className="grid grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
         {metrics.map((metric, index) => {
           return (
             <motion.div

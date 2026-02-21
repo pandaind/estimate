@@ -49,13 +49,13 @@ const CreateSession = ({ onSessionCreated }) => {
   };
 
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-12">
-      <div className="mb-10">
-        <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Create Session</h2>
+    <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-5 sm:p-8">
+      <div className="mb-5 sm:mb-8">
+        <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">Create Session</h2>
         <p className="text-gray-500 dark:text-gray-400">Start a new estimation session</p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-8">
+      <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6">
         <div>
           <label htmlFor="session-name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
             Session Name

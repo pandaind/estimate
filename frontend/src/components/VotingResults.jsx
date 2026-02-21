@@ -170,7 +170,7 @@ const VotingResults = ({ session, currentStory, onFinalizeEstimate, isModerator 
         {showVotes || currentStory.finalEstimate ? (
           <div className="space-y-4">
             {/* Individual votes */}
-            <div className="grid grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {votes.map((vote, index) => (
                 <motion.div
                   key={vote.id}
@@ -204,7 +204,7 @@ const VotingResults = ({ session, currentStory, onFinalizeEstimate, isModerator 
             {/* Vote summary */}
             <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
               <h4 className="font-medium text-gray-900 dark:text-white mb-3">Summary</h4>
-              <div className="grid grid-cols-3 gap-4 text-center">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 text-center">
                 <div>
                   <div className="text-2xl font-bold text-gray-900 dark:text-white">
                     {votes.length}
@@ -271,7 +271,7 @@ const VotingResults = ({ session, currentStory, onFinalizeEstimate, isModerator 
             {isModerator && votes.length > 0 && !currentStory.finalEstimate && (
               <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
                 <h4 className="font-medium text-gray-900 dark:text-white mb-3">Finalize Estimate</h4>
-                <div className="flex items-center space-x-3">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
                   <select
                     value={selectedFinalEstimate}
                     onChange={(e) => setSelectedFinalEstimate(e.target.value)}
@@ -313,7 +313,7 @@ const VotingResults = ({ session, currentStory, onFinalizeEstimate, isModerator 
           </div>
         ) : (
           <div className="text-center py-8">
-            <div className="grid grid-cols-4 gap-4 mb-6 max-w-2xl mx-auto">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4 mb-6 max-w-2xl mx-auto">
               {votes.map((vote, index) => (
                 <motion.div
                   key={index}

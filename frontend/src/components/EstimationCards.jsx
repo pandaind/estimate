@@ -94,7 +94,7 @@ const EstimationCards = ({ session, currentStory, userName, userId, isModerator 
           </div>
         )}
         {canVote && (
-          <div className="flex items-center justify-center space-x-4 mb-6">
+          <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 mb-4 sm:mb-6">
             <label className="text-sm font-medium text-gray-600 dark:text-gray-400">
               Confidence:
             </label>
@@ -119,7 +119,7 @@ const EstimationCards = ({ session, currentStory, userName, userId, isModerator 
         )}
       </div>
 
-      <div className="grid grid-cols-6 gap-4 max-w-6xl mx-auto">
+      <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-2 sm:gap-3 max-w-5xl mx-auto">
         {sizingValues.map((value, index) => {
           const emoji = getCardEmoji(value);
           const isSelected = selectedCard === value;
@@ -132,7 +132,7 @@ const EstimationCards = ({ session, currentStory, userName, userId, isModerator 
               aria-label={`Vote ${value} points`}
               role="button"
               className={cn(
-                'relative min-h-[140px] flex flex-col items-center justify-center text-2xl font-bold rounded-xl border-2 transition-all disabled:opacity-50',
+                'relative min-h-[90px] sm:min-h-[120px] lg:min-h-[140px] flex flex-col items-center justify-center text-xl sm:text-2xl font-bold rounded-xl border-2 transition-all disabled:opacity-50',
                 isSelected
                   ? 'border-blue-600 bg-blue-50 dark:bg-blue-950 scale-105 shadow-lg'
                   : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 hover:border-blue-400 hover:shadow-md',

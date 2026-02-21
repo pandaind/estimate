@@ -1,5 +1,5 @@
 import { Toaster } from 'sonner'
-import { Routes, Route, useNavigate, Navigate } from 'react-router-dom'
+import { Routes, Route, useNavigate, Navigate, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import CreateSession from './components/CreateSession'
 import JoinSession from './components/JoinSession'
@@ -49,17 +49,17 @@ function Home() {
       transition={{ duration: 0.2 }}
       className="min-h-screen flex flex-col items-center justify-center"
     >
-      <div className="text-center mb-20">
-        <div className="inline-flex items-center justify-center w-20 h-20 bg-blue-600 rounded-2xl mb-8">
-          <FontAwesomeIcon icon={faBolt} className="w-10 h-10 text-white" />
+      <div className="text-center mb-10 sm:mb-20 px-4">
+        <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-blue-600 rounded-2xl mb-6 sm:mb-8">
+          <FontAwesomeIcon icon={faBolt} className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
         </div>
-        <h1 className="text-6xl font-bold text-gray-900 dark:text-white mb-6">EstiMate</h1>
-        <p className="text-xl text-gray-500 dark:text-gray-400 max-w-2xl mx-auto">
+        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white mb-4 sm:mb-6">EstiMate</h1>
+        <p className="text-base sm:text-xl text-gray-500 dark:text-gray-400 max-w-2xl mx-auto">
           Simple, fast story estimation for agile teams
         </p>
       </div>
 
-      <div className="flex items-center justify-center gap-12 mb-16 text-sm text-gray-500 dark:text-gray-400">
+      <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-10 mb-8 sm:mb-16 px-4 text-sm text-gray-500 dark:text-gray-400">
         <div className="flex items-center gap-2">
           <FontAwesomeIcon icon={faBolt}     className="text-xl text-blue-600 dark:text-blue-400" />
           <span>Multiple Methods</span>
@@ -74,16 +74,16 @@ function Home() {
         </div>
       </div>
 
-      <div className="flex gap-4">
+      <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 w-full max-w-xs sm:max-w-none px-6 sm:px-0">
         <button
           onClick={() => navigate('/create')}
-          className="bg-blue-600 text-white px-10 py-4 rounded-xl font-semibold text-lg hover:bg-blue-700 transition-colors"
+          className="bg-blue-600 text-white px-8 sm:px-10 py-3 sm:py-4 rounded-xl font-semibold text-base sm:text-lg hover:bg-blue-700 active:bg-blue-800 transition-colors w-full sm:w-auto text-center"
         >
           Create Session
         </button>
         <button
           onClick={() => navigate('/join')}
-          className="bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white px-10 py-4 rounded-xl font-semibold text-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors border border-gray-200 dark:border-gray-700"
+          className="bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white px-8 sm:px-10 py-3 sm:py-4 rounded-xl font-semibold text-base sm:text-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors border border-gray-200 dark:border-gray-700 w-full sm:w-auto text-center"
         >
           Join Session
         </button>
@@ -124,10 +124,10 @@ function CreatePage() {
       transition={{ duration: 0.2 }}
       className="min-h-screen flex items-center justify-center py-12"
     >
-      <div className="w-full max-w-xl px-8">
+      <div className="w-full max-w-xl px-4 sm:px-8">
         <button
           onClick={() => navigate('/')}
-          className="mb-8 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors font-medium"
+          className="mb-4 sm:mb-8 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors font-medium"
         >
           ← Back
         </button>
@@ -156,10 +156,10 @@ function JoinPage() {
       transition={{ duration: 0.2 }}
       className="min-h-screen flex items-center justify-center py-12"
     >
-      <div className="w-full max-w-xl px-8">
+      <div className="w-full max-w-xl px-4 sm:px-8">
         <button
           onClick={() => navigate('/')}
-          className="mb-8 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors font-medium"
+          className="mb-4 sm:mb-8 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors font-medium"
         >
           ← Back
         </button>
@@ -171,11 +171,16 @@ function JoinPage() {
 
 // ── App shell ─────────────────────────────────────────────────────────────────
 function App() {
+  const location = useLocation()
+  const isSessionPage = location.pathname.startsWith('/session/')
+
   return (
     <div className="min-h-screen bg-white dark:bg-gray-950">
-      <div className="fixed top-8 right-8 z-50">
-        <ThemeToggle />
-      </div>
+      {!isSessionPage && (
+        <div className="fixed top-4 right-4 sm:top-6 sm:right-6 z-50">
+          <ThemeToggle />
+        </div>
+      )}
       <Toaster richColors position="top-right" />
       <AnimatePresence mode="wait">
         <Routes>

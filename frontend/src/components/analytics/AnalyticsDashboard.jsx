@@ -138,7 +138,7 @@ const AnalyticsDashboard = ({ sessionCode, currentStoryId = null }) => {
 
       {/* Quick Stats */}
       {sessionAnalytics && (
-        <div className="grid grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}

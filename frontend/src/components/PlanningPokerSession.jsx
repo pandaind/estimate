@@ -213,7 +213,7 @@ const PlanningPokerSession = ({
         <SessionTabs activeTab={activeTab} onTabChange={setActiveTab} />
       )}
 
-      <main className="max-w-7xl mx-auto px-8 py-12">
+        <main className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8 lg:py-12">
         {isModerator ? (
           <ModeratorView
             activeTab={activeTab}

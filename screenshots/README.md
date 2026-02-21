@@ -41,4 +41,4 @@ These screenshots are automatically extracted from Playwright E2E test execution
 
 ---
 
-*Last updated: February 15, 2026*
+*Last updated: February 21, 2026*

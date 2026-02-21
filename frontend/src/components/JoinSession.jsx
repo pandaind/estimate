@@ -33,13 +33,13 @@ const JoinSession = ({ onSessionJoined }) => {
   };
 
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-12">
-      <div className="mb-10">
-        <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Join Session</h2>
+    <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-5 sm:p-8">
+      <div className="mb-5 sm:mb-8">
+        <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">Join Session</h2>
         <p className="text-gray-500 dark:text-gray-400">Enter the session code to join</p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-8">
+      <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6">
         <div>
           <label htmlFor="session-code" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
             Session Code
@@ -79,7 +79,7 @@ const JoinSession = ({ onSessionJoined }) => {
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
             Choose Avatar
           </label>
-          <div className="grid grid-cols-6 gap-2">
+          <div className="grid grid-cols-5 sm:grid-cols-6 gap-2">
             {AVATARS.map((avatar, index) => (
               <motion.button
                 key={index}
@@ -100,7 +100,7 @@ const JoinSession = ({ onSessionJoined }) => {
         </div>
 
         {error && (
-          <div className="p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm">
+          <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-400 dark:border-red-500/50 text-red-700 dark:text-red-300 rounded-lg text-sm">
             {error}
           </div>
         )}
@@ -111,7 +111,7 @@ const JoinSession = ({ onSessionJoined }) => {
           className="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
         >
           {isLoading ? (
-            <div className="animate-sp rounded-full h-5 w-5 border-b-2 border-white"></div>
+            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
           ) : (
             <>
               <FontAwesomeIcon icon={faUsers} className="w-5 h-5" />

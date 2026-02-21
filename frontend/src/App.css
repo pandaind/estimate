@@ -1,8 +1,15 @@
 /* Custom styles for the Planning Poker app */
 
-/* Smooth transitions */
-* {
+/* Smooth theme transitions — scoped to avoid fighting framer-motion */
+body, header, main, aside, footer, nav,
+button, input, select, textarea,
+.transition-theme {
   transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+/* Prevent horizontal overflow on mobile */
+body {
+  overflow-x: hidden;
 }
 
 /* Custom scrollbar */
@@ -29,6 +36,15 @@
 
 .dark ::-webkit-scrollbar-thumb:hover {
   background: #4b5563;
+}
+
+/* Hide scrollbar on overflow-x-auto nav bars (tabs) */
+.scrollbar-hide {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
 }
 
 /* Focus visible styles for accessibility */
