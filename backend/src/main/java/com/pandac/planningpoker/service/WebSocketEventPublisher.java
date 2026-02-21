@@ -44,6 +44,11 @@ public class WebSocketEventPublisher {
 
     // ── Vote / reveal events ───────────────────────────────────────────────────
 
+    public void voteCast(String sessionCode, Long storyId, int voteCount) {
+        publish("/topic/session/" + sessionCode + "/votes",
+                Map.of("type", "VOTE_CAST", "storyId", storyId, "voteCount", voteCount));
+    }
+
     public void votesRevealed(String sessionCode, Long storyId) {
         publish("/topic/session/" + sessionCode + "/reveal",
                 Map.of("type", "VOTES_REVEALED", "storyId", storyId, "sessionCode", sessionCode));

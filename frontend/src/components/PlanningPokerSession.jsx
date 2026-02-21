@@ -28,6 +28,7 @@ const PlanningPokerSession = ({
   const [currentStory, setCurrentStory] = useState(null);
   const [users, setUsers]               = useState([]);
   const [allStories, setAllStories]     = useState([]);
+  const [voteVersion, setVoteVersion]   = useState(0);
 
   // ── tab state (persisted) ────────────────────────────────────────────────
   const [activeTab, setActiveTab] = useState(
@@ -106,6 +107,9 @@ const PlanningPokerSession = ({
       if (data.type === 'TIMER_SETTINGS_CHANGED') {
         setSession((prev) => ({ ...prev, timerEnabled: data.timerEnabled, timerDuration: data.timerDuration }));
       }
+    },
+    onVoteChange: (data) => {
+      if (data.type === 'VOTE_CAST') setVoteVersion((v) => v + 1);
     },
   });
 
@@ -217,9 +221,10 @@ const PlanningPokerSession = ({
             currentStory={currentStory}
             userName={userName}
             userId={userId}
-            onVoteSubmitted={fetchUsers}
+            onVoteSubmitted={() => { fetchUsers(); setVoteVersion((v) => v + 1); }}
             onStorySelected={handleStorySelected}
             onStoriesUpdate={setAllStories}
+            voteVersion={voteVersion}
             showCreateStoryForm={showCreateStoryForm}
             onToggleCreateStoryForm={() => setShowCreateStoryForm((p) => !p)}
             onFinalizeEstimate={handleFinalizeEstimate}

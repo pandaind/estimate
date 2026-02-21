@@ -82,6 +82,10 @@ public class VoteServiceImpl implements IVoteService {
 
         vote = voteRepository.save(vote);
 
+        // Publish VOTE_CAST event so clients can update vote counts in real-time
+        int voteCount = voteRepository.findByStory(story).size();
+        webSocketEventPublisher.voteCast(sessionCode, storyId, voteCount);
+
         // Check for auto-reveal
         if (session.getSettings().getAutoReveal() && !session.getVotesRevealed()) {
             List<User> activeUsers = userRepository.findBySessionAndIsActiveAndIsObserver(session, true, false);

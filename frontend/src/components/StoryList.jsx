@@ -16,7 +16,7 @@ const getInitials = (name) => {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 };
 
-const StoryList = ({ session, onStorySelected, currentStory, userName, isModerator = false, showCreateForm, onToggleCreateForm }) => {
+const StoryList = ({ session, onStorySelected, currentStory, userName, isModerator = false, refreshKey, showCreateForm, onToggleCreateForm }) => {
   const [stories, setStories] = useState([]);
   const [newStory, setNewStory] = useState({ 
     title: '', 
@@ -44,7 +44,7 @@ const StoryList = ({ session, onStorySelected, currentStory, userName, isModerat
     if (currentStory) {
       fetchVotes(currentStory.id);
     }
-  }, [currentStory]);
+  }, [currentStory, refreshKey]);
 
   // Sync revealed state with session's votesRevealed flag
   useEffect(() => {

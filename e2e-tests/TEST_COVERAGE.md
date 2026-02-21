@@ -109,6 +109,13 @@ These tests check the core planning poker voting functionality.
 - Test T-Shirt sizes (XS, S, M, L, XL)
 - Verify the correct cards appear for each scale
 
+### ✅ Update vote count in story list after vote is cast
+**What it tests:** The vote counter in the Stories tab reflects cast votes in real-time
+- Before any vote, the story shows "0 votes"
+- Facilitator casts a vote on the active story
+- After the WebSocket VOTE_CAST event is received, the Stories tab shows "1 vote"
+- Verifies the bug fix: vote count was previously stuck at 0 even after voting
+
 ---
 
 ## 4️⃣ Real-time Collaboration (3 tests)

@@ -10,6 +10,7 @@ import { useWebSocket } from '../components/websocket/WebSocketProvider';
  * @param {Function} params.onReveal         - called with parsed reveal-topic message
  * @param {Function} params.onUserChange     - called with parsed users-topic message
  * @param {Function} params.onTimerSettings  - called with parsed timer-topic message
+ * @param {Function} params.onVoteChange     - called with parsed votes-topic message
  */
 export function useSessionWebSocket({
   sessionCode,
@@ -17,6 +18,7 @@ export function useSessionWebSocket({
   onReveal,
   onUserChange,
   onTimerSettings,
+  onVoteChange,
 }) {
   const { subscribe, connected } = useWebSocket();
 
@@ -41,7 +43,8 @@ export function useSessionWebSocket({
       subscribe(`/topic/session/${sessionCode}/reveal`, parse(onReveal)),
       subscribe(`/topic/session/${sessionCode}/users`,  parse(onUserChange)),
       subscribe(`/topic/session/${sessionCode}/timer`,  parse(onTimerSettings)),
-    ];
+      onVoteChange && subscribe(`/topic/session/${sessionCode}/votes`, parse(onVoteChange)),
+    ].filter(Boolean);
 
     return () => subs.forEach((unsub) => unsub?.());
   // eslint-disable-next-line react-hooks/exhaustive-deps

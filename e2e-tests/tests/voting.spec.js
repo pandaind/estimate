@@ -157,4 +157,25 @@ test.describe('Voting and Estimation', () => {
       await expect(page.locator(`[aria-label="Vote ${value} points"]`)).toBeVisible();
     }
   });
+
+  test('should update vote count in story list after vote is cast', async ({ page }) => {
+    // Navigate to Stories tab first — before any vote, count should be 0
+    await page.click('button:has-text("Stories")');
+    await page.waitForTimeout(500);
+
+    await expect(page.locator('text=0 votes')).toBeVisible();
+
+    // Navigate back to Estimate tab and cast a vote
+    await page.click('button:has-text("Estimate")');
+    await page.waitForTimeout(500);
+
+    await page.click('[aria-label="Vote 5 points"]');
+    await page.waitForTimeout(1000); // Allow WebSocket VOTE_CAST event and re-fetch to settle
+
+    // Navigate to Stories tab — vote count should now show 1
+    await page.click('button:has-text("Stories")');
+    await page.waitForTimeout(500);
+
+    await expect(page.locator('text=1 vote')).toBeVisible();
+  });
 });

@@ -204,6 +204,13 @@ These tests check the core voting and estimation functionality.
 - All votes are stored separately
 - No votes overwrite each other
 
+### ✅ Vote Count Visible Without Reveal (TC-044)
+**What it tests:** `GET /votes` (without `revealed=true`) always returns the actual vote count
+- After multiple users vote, call `GET /votes` with no `revealed` parameter
+- Response contains all cast votes with correct count
+- Each vote includes `id`, `estimate`, `user` (id + name), and `votedAt`
+- Verifies the bug fix: StoryList should show real vote counts as soon as votes are cast
+
 ### ✅ Observer Cannot Vote (Error Test)
 **What it tests:** Observers are blocked from voting
 - Observer tries to submit vote

@@ -1,6 +1,6 @@
 # API Tests
 
-Newman/Postman test suite with 38 test cases.
+Newman/Postman test suite with 39 test cases.
 
 ## Run Tests
 
@@ -26,7 +26,7 @@ newman run planning-poker-api.postman_collection.json -e environment.json
 - Advanced scenarios
 - Export/Import operations
 
-**Total:** 38 tests across 6 phases
+**Total:** 39 tests across 6 phases
 
 ### Phase 3: User/Participant Management (6 tests)
 - ✅ TC-008: Join Session (Regular User)
@@ -45,9 +45,10 @@ newman run planning-poker-api.postman_collection.json -e environment.json
 - ✅ TC-019: Update Story
 - ✅ TC-020: Set Current Story
 
-### Phase 5: Voting Flow (12 tests)
+### Phase 5: Voting Flow (13 tests)
 - ✅ TC-022: Cast Vote (Regular User)
 - ✅ TC-023: Cast Multiple Votes
+- ✅ TC-044: Vote Count Visible Without Reveal
 - ✅ TC-024: Observer Cannot Vote (Error)
 - ✅ TC-025: Get Votes (Before Reveal)
 - ✅ TC-026: Reveal Votes (Manual)

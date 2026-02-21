@@ -15,6 +15,7 @@ export default function ModeratorView({
   onVoteSubmitted,
   onStorySelected,
   onStoriesUpdate,
+  voteVersion,
   showCreateStoryForm,
   onToggleCreateStoryForm,
   onFinalizeEstimate,
@@ -39,6 +40,7 @@ export default function ModeratorView({
           currentStory={currentStory}
           userName={userName}
           isModerator={true}
+          refreshKey={voteVersion}
           showCreateForm={showCreateStoryForm}
           onToggleCreateForm={onToggleCreateStoryForm}
         />

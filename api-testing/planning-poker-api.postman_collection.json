@@ -1370,6 +1370,60 @@
           }
         },
         {
+          "name": "TC-044: Vote Count Visible Without Reveal",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Vote count reflects all cast votes (no reveal required)', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.be.an('array');",
+                  "    pm.expect(jsonData.length).to.eql(2, 'Expected 2 votes from Alice and Bob');",
+                  "});",
+                  "",
+                  "pm.test('Each vote has id, estimate, user and votedAt fields', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    jsonData.forEach(function (vote) {",
+                  "        pm.expect(vote).to.have.property('id');",
+                  "        pm.expect(vote).to.have.property('estimate');",
+                  "        pm.expect(vote).to.have.property('user');",
+                  "        pm.expect(vote.user).to.have.property('id');",
+                  "        pm.expect(vote.user).to.have.property('name');",
+                  "        pm.expect(vote).to.have.property('votedAt');",
+                  "    });",
+                  "});",
+                  "",
+                  "console.log('\u2705 TC-044 PASSED: Vote count correct without reveal (' + pm.response.json().length + ' votes)');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/sessions/{{sessionCode}}/stories/{{story1Id}}/votes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "sessions",
+                "{{sessionCode}}",
+                "stories",
+                "{{story1Id}}",
+                "votes"
+              ]
+            }
+          }
+        },
+        {
           "name": "TC-024: Observer Cannot Vote (Error)",
           "event": [
             {
