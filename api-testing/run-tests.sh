@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Planning Poker API - Newman Test Runner Script
-# This script runs the complete Newman test suite for the Planning Poker backend
+# EstiMate API - Newman Test Runner Script
+# This script runs the complete Newman test suite for the EstiMate backend
 
 # Colors for output
 GREEN='\033[0;32m'
@@ -11,7 +11,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 echo -e "${BLUE}╔════════════════════════════════════════════════════════╗${NC}"
-echo -e "${BLUE}║   Planning Poker API - Newman Test Suite Runner       ║${NC}"
+echo -e "${BLUE}║   EstiMate API - Newman Test Suite Runner              ║${NC}"
 echo -e "${BLUE}╚════════════════════════════════════════════════════════╝${NC}"
 echo ""
 

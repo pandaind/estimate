@@ -7,7 +7,10 @@ import lombok.AllArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+
+import com.pandac.planningpoker.model.converter.StringListConverter;
 
 @Entity
 @Table(name = "sessions")
@@ -33,8 +36,9 @@ public class Session {
     @Column(nullable = false)
     private SizingMethod sizingMethod;
     
+    @Convert(converter = StringListConverter.class)
     @Column(columnDefinition = "TEXT")
-    private String customValues; // JSON array for custom sizing method
+    private List<String> customValues = Collections.emptyList(); // JSON array for custom sizing method
     
     private Long moderatorId;
     
@@ -57,24 +61,10 @@ public class Session {
     @Column(nullable = false)
     private Boolean votesRevealed = false;
     
-    // Session Settings
-    @Column(nullable = false)
-    private Boolean autoReveal = false;
-    
-    @Column(nullable = false)
-    private Boolean timerEnabled = false;
-    
-    private Integer timerDuration = 300;
-    
-    @Column(nullable = false)
-    private Boolean allowChangeVote = true;
-    
-    @Column(nullable = false)
-    private Boolean allowObservers = true;
-    
-    @Column(nullable = false)
-    private Boolean requireConfidence = false;
-    
+    // Session Settings (embedded — add new settings fields only in SessionSettings.java)
+    @Embedded
+    private SessionSettings settings = new SessionSettings();
+
     @Column(nullable = false)
     private Boolean moderatorCanVote = false;
     

@@ -19,11 +19,12 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class AnalyticsService {
-    
+
     private final SessionRepository sessionRepository;
     private final StoryRepository storyRepository;
     private final UserRepository userRepository;
     private final VoteRepository voteRepository;
+    private final VoteStatisticsCalculator voteStatisticsCalculator;
     
     /**
      * Get detailed analytics for a specific story's votes
@@ -60,38 +61,33 @@ public class AnalyticsService {
         analytics.setParticipantCount((int) participantCount);
         
         if (!votes.isEmpty()) {
-            // Calculate distribution
-            Map<String, Integer> distribution = votes.stream()
-                    .collect(Collectors.groupingBy(
-                            Vote::getEstimate,
-                            Collectors.collectingAndThen(Collectors.counting(), Long::intValue)
-                    ));
-            analytics.setDistribution(distribution);
-            analytics.setVoteDistribution(distribution); // alias
-            
+            // Use shared calculator for all statistics
+            VoteStatisticsCalculator.VoteStatistics stats = voteStatisticsCalculator.calculate(votes);
+
+            analytics.setDistribution(stats.getDistribution());
+            analytics.setVoteDistribution(stats.getDistribution()); // alias
+
             // Convert votes to VoteResponse for detailed view
             List<VoteResponse> voteResponses = votes.stream()
                     .map(this::convertToVoteResponse)
                     .collect(Collectors.toList());
             analytics.setVotes(voteResponses);
-            
-            // Calculate statistics for numeric votes
-            List<Double> numericVotes = votes.stream()
-                    .map(Vote::getEstimate)
-                    .filter(this::isNumeric)
-                    .map(Double::parseDouble)
-                    .sorted()
-                    .collect(Collectors.toList());
-            
-            if (!numericVotes.isEmpty()) {
-                StoryAnalyticsDTO.Statistics stats = calculateStatistics(numericVotes);
-                analytics.setStatistics(stats);
+
+            // Populate StoryAnalyticsDTO.Statistics from calculator result
+            if (!stats.getNumericValues().isEmpty()) {
+                StoryAnalyticsDTO.Statistics storyStats = new StoryAnalyticsDTO.Statistics();
+                storyStats.setMean(stats.getAverage());
+                storyStats.setMedian(stats.getAverage() != null
+                        ? Double.parseDouble(stats.getMedian()) : 0.0);
+                storyStats.setMode(stats.getMode());
+                storyStats.setStdDeviation(stats.getStdDeviation() != null ? stats.getStdDeviation() : 0.0);
+                storyStats.setConfidenceAverage(0.0);
+                analytics.setStatistics(storyStats);
             }
-            
-            // Check consensus
-            analytics.setConsensus(distribution.size() == 1);
-            analytics.setConsensusAchieved(distribution.size() == 1); // alias
-            analytics.setConsensusRate(distribution.size() == 1 ? 100.0 : 0.0);
+
+            analytics.setConsensus(stats.isConsensus());
+            analytics.setConsensusAchieved(stats.isConsensus()); // alias
+            analytics.setConsensusRate(stats.isConsensus() ? 100.0 : 0.0);
             
             // Calculate voting duration if votes have timestamps
             if (votes.stream().allMatch(v -> v.getVotedAt() != null)) {
@@ -278,49 +274,6 @@ public class AnalyticsService {
         analytics.setParticipantActivity(participantActivities);
         
         return analytics;
-    }
-    
-    private StoryAnalyticsDTO.Statistics calculateStatistics(List<Double> numericVotes) {
-        StoryAnalyticsDTO.Statistics stats = new StoryAnalyticsDTO.Statistics();
-        
-        if (numericVotes.isEmpty()) {
-            return stats;
-        }
-        
-        // Mean
-        double mean = numericVotes.stream().mapToDouble(Double::doubleValue).average().orElse(0.0);
-        stats.setMean(mean);
-        
-        // Median
-        int size = numericVotes.size();
-        double median = size % 2 == 0 
-                ? (numericVotes.get(size / 2 - 1) + numericVotes.get(size / 2)) / 2.0
-                : numericVotes.get(size / 2);
-        stats.setMedian(median);
-        
-        // Mode (most frequent value)
-        Map<Double, Long> frequency = numericVotes.stream()
-                .collect(Collectors.groupingBy(v -> v, Collectors.counting()));
-        
-        Optional<Map.Entry<Double, Long>> modeEntry = frequency.entrySet().stream()
-                .max(Map.Entry.comparingByValue());
-        
-        if (modeEntry.isPresent()) {
-            stats.setMode(String.valueOf(modeEntry.get().getKey()));
-        }
-        
-        // Standard deviation
-        if (numericVotes.size() > 1) {
-            double variance = numericVotes.stream()
-                    .mapToDouble(v -> Math.pow(v - mean, 2))
-                    .average()
-                    .orElse(0.0);
-            stats.setStdDeviation(Math.sqrt(variance));
-        }
-
-        stats.setConfidenceAverage(0.0);
-        
-        return stats;
     }
     
     private boolean isNumeric(String str) {

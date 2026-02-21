@@ -110,12 +110,11 @@ public class ExportService {
         newSession.setDescription(originalSession.getDescription());
         newSession.setSizingMethod(originalSession.getSizingMethod());
         newSession.setCustomValues(originalSession.getCustomValues());
-        newSession.setAutoReveal(originalSession.getAutoReveal());
-        newSession.setTimerEnabled(originalSession.getTimerEnabled());
-        newSession.setTimerDuration(originalSession.getTimerDuration());
-        newSession.setAllowChangeVote(originalSession.getAllowChangeVote());
-        newSession.setAllowObservers(originalSession.getAllowObservers());
-        newSession.setRequireConfidence(originalSession.getRequireConfidence());
+        // Copy embedded settings (one line instead of six)
+        SessionSettings src = originalSession.getSettings();
+        newSession.setSettings(new SessionSettings(
+                src.getAutoReveal(), src.getTimerEnabled(), src.getTimerDuration(),
+                src.getAllowChangeVote(), src.getAllowObservers(), src.getRequireConfidence()));
         newSession.setVotesRevealed(false); // Reset voting state
         newSession.setIsActive(true);
         

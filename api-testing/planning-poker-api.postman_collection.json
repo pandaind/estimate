@@ -80,11 +80,16 @@
       "key": "authToken",
       "value": "",
       "type": "string"
+    },
+    {
+      "key": "aliceToken",
+      "value": "",
+      "type": "string"
     }
   ],
   "item": [
     {
-      "name": "Phase 1: Health Check & System Validation",
+      "name": "Health Check & System Validation",
       "item": [
         {
           "name": "TC-001: Health Check",
@@ -167,7 +172,7 @@
       ]
     },
     {
-      "name": "Phase 2: Session Management",
+      "name": "Session Management",
       "item": [
         {
           "name": "TC-003: Create Session (Basic)",
@@ -212,7 +217,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Sprint 24 Planning\",\n  \"description\": \"Planning session for Sprint 24\",\n  \"sizingMethod\": \"FIBONACCI\",\n  \"moderatorName\": \"John Doe\",\n  \"moderatorAvatar\": \"\ud83d\udc68\u200d\ud83d\udcbc\"\n}"
+              "raw": "{\n  \"name\": \"Sprint 24 Planning\",\n  \"description\": \"Planning session for Sprint 24\",\n  \"sizingMethod\": \"FIBONACCI\",\n  \"moderatorName\": \"John Doe\",\n  \"moderatorAvatar\": \"\ud83d\udc68\u200d\ud83d\udcbc\",\n  \"moderatorCanVote\": false\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/sessions",
@@ -237,16 +242,20 @@
                   "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
                   "});",
                   "",
+                  "// Save session code immediately \u2014 before any assertions that could throw",
+                  "const resp4 = pm.response.json();",
+                  "if (resp4.session) {",
+                  "    pm.environment.set('sessionCode2', resp4.session.sessionCode);",
+                  "}",
+                  "",
                   "pm.test('Session created with custom settings', function () {",
                   "    const jsonData = pm.response.json();",
                   "    pm.expect(jsonData).to.have.property('session');",
                   "    pm.expect(jsonData.session.sizingMethod).to.eql('CUSTOM');",
-                  "    pm.expect(jsonData.session.autoReveal).to.eql(true);",
-                  "    pm.expect(jsonData.session.timerEnabled).to.eql(true);",
-                  "    pm.expect(jsonData.session.timerDuration).to.eql(300);",
-                  "    ",
-                  "    // Save second session code",
-                  "    pm.environment.set('sessionCode2', jsonData.session.sessionCode);",
+                  "    pm.expect(jsonData.session.settings.autoReveal).to.eql(true);",
+                  "    pm.expect(jsonData.session.settings.timerEnabled).to.eql(true);",
+                  "    pm.expect(jsonData.session.settings.timerDuration).to.eql(300);",
+                  "    pm.expect(jsonData.session.moderatorCanVote).to.eql(true);",
                   "});",
                   "",
                   "console.log('\u2705 TC-004 PASSED: Custom session created');"
@@ -265,7 +274,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Advanced Planning Session\",\n  \"description\": \"Testing custom settings\",\n  \"sizingMethod\": \"CUSTOM\",\n  \"customValues\": [\"XS\", \"S\", \"M\", \"L\", \"XL\", \"XXL\"],\n  \"moderatorName\": \"Jane Smith\",\n  \"moderatorAvatar\": \"\ud83d\udc69\u200d\ud83d\udcbb\",\n  \"settings\": {\n    \"autoReveal\": true,\n    \"timerEnabled\": true,\n    \"timerDuration\": 300,\n    \"allowChangeVote\": false,\n    \"allowObservers\": true,\n    \"requireConfidence\": true\n  }\n}"
+              "raw": "{\n  \"name\": \"Advanced Planning Session\",\n  \"description\": \"Testing custom settings\",\n  \"sizingMethod\": \"CUSTOM\",\n  \"customValues\": [\"XS\", \"S\", \"M\", \"L\", \"XL\", \"XXL\"],\n  \"moderatorName\": \"Jane Smith\",\n  \"moderatorAvatar\": \"\ud83d\udc69\u200d\ud83d\udcbb\",\n  \"moderatorCanVote\": true,\n  \"settings\": {\n    \"autoReveal\": true,\n    \"timerEnabled\": true,\n    \"timerDuration\": 300,\n    \"allowChangeVote\": false,\n    \"allowObservers\": true,\n    \"requireConfidence\": true\n  }\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/sessions",
@@ -275,6 +284,44 @@
               "path": [
                 "api",
                 "sessions"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-042: Verify moderatorCanVote=true on Custom Session",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('moderatorCanVote is true on custom session', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.moderatorCanVote).to.eql(true);",
+                  "});",
+                  "",
+                  "console.log('\u2705 TC-042 PASSED: moderatorCanVote=true confirmed on custom session');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/sessions/{{sessionCode2}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "sessions",
+                "{{sessionCode2}}"
               ]
             }
           }
@@ -334,7 +381,7 @@
                   "    const jsonData = pm.response.json();",
                   "    pm.expect(jsonData.name).to.eql('Updated Sprint 24 Planning');",
                   "    pm.expect(jsonData.description).to.eql('Updated description');",
-                  "    pm.expect(jsonData.autoReveal).to.eql(true);",
+                  "    pm.expect(jsonData.settings.autoReveal).to.eql(true);",
                   "});",
                   "",
                   "console.log('\u2705 TC-006 PASSED: Session updated');"
@@ -413,7 +460,7 @@
       ]
     },
     {
-      "name": "Phase 3: User/Participant Management",
+      "name": "User/Participant Management",
       "item": [
         {
           "name": "TC-008: Join Session (Regular User)",
@@ -435,10 +482,10 @@
                   "    // Save user ID",
                   "    pm.environment.set('aliceUserId', jsonData.userId);",
                   "    ",
-                  "    // Save authentication token",
+                  "    // Save Alice's participant token separately \u2014 moderator token stays in authToken",
                   "    if (jsonData.token) {",
-                  "        pm.environment.set('authToken', jsonData.token);",
-                  "        console.log('\ud83d\udd11 Token stored for authentication');",
+                  "        pm.environment.set('aliceToken', jsonData.token);",
+                  "        console.log('\ud83d\udd11 Alice participant token stored');",
                   "    }",
                   "});",
                   "",
@@ -710,7 +757,7 @@
       ]
     },
     {
-      "name": "Phase 4: Story Management",
+      "name": "Story Management",
       "item": [
         {
           "name": "TC-014: Create Story (Basic)",
@@ -1050,7 +1097,7 @@
       ]
     },
     {
-      "name": "Phase 5: Voting Flow",
+      "name": "Voting Flow",
       "item": [
         {
           "name": "Setup: Rejoin Alice for Voting",
@@ -1096,6 +1143,45 @@
           }
         },
         {
+          "name": "TC-021: Verify moderatorCanVote=false on Basic Session",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('moderatorCanVote is false on basic session', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('moderatorCanVote');",
+                  "    pm.expect(jsonData.moderatorCanVote).to.eql(false);",
+                  "});",
+                  "",
+                  "console.log('\u2705 TC-021 PASSED: moderatorCanVote=false confirmed on basic session');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/sessions/{{sessionCode}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "sessions",
+                "{{sessionCode}}"
+              ]
+            }
+          }
+        },
+        {
           "name": "TC-022: Cast Vote (Regular User)",
           "event": [
             {
@@ -1129,6 +1215,56 @@
             "body": {
               "mode": "raw",
               "raw": "{\n  \"estimate\": \"5\",\n  \"confidence\": 4,\n  \"userId\": {{aliceUserId}}\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/sessions/{{sessionCode}}/stories/{{story1Id}}/votes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "sessions",
+                "{{sessionCode}}",
+                "stories",
+                "{{story1Id}}",
+                "votes"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-043: Duplicate Vote Updates Existing Vote (Upsert)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 or 201', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                  "});",
+                  "",
+                  "pm.test('Vote updated to new value', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.estimate).to.eql('8');",
+                  "});",
+                  "",
+                  "console.log('\u2705 TC-043 PASSED: Duplicate vote overrides previous estimate');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estimate\": \"8\",\n  \"confidence\": 5,\n  \"userId\": {{aliceUserId}}\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/sessions/{{sessionCode}}/stories/{{story1Id}}/votes",
@@ -1347,8 +1483,7 @@
                   "    pm.expect(jsonData).to.have.property('votes');",
                   "    pm.expect(jsonData).to.have.property('consensus');",
                   "    pm.expect(jsonData).to.have.property('distribution');",
-                  "    pm.expect(jsonData.consensus).to.eql(false); // 5 vs 8",
-                  "    pm.expect(jsonData.distribution).to.have.property('5');",
+                  "    pm.expect(jsonData.consensus).to.eql(true); // Alice=8, Bob=8 \u2192 consensus",
                   "    pm.expect(jsonData.distribution).to.have.property('8');",
                   "});",
                   "",
@@ -1599,6 +1734,49 @@
           }
         },
         {
+          "name": "TC-031b: Reset Story for Revoting",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Story reset for revoting', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('id');",
+                  "    pm.expect(jsonData.status).to.eql('NOT_ESTIMATED');",
+                  "    pm.expect(jsonData).to.have.property('title');",
+                  "});",
+                  "",
+                  "console.log('\u2705 TC-031b PASSED: Story reset for revoting');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/sessions/{{sessionCode}}/stories/{{story1Id}}/reset",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "sessions",
+                "{{sessionCode}}",
+                "stories",
+                "{{story1Id}}",
+                "reset"
+              ]
+            }
+          }
+        },
+        {
           "name": "TC-032: Reset Votes",
           "event": [
             {
@@ -1672,7 +1850,7 @@
       ]
     },
     {
-      "name": "Phase 6: Advanced Scenarios",
+      "name": "Advanced Scenarios",
       "item": [
         {
           "name": "TC-034: Non-Numeric Votes",
@@ -1717,6 +1895,118 @@
                 "stories",
                 "{{story2Id}}",
                 "votes"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-040: Request Without Auth Token (Error Handling)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Remove the Authorization header injected by the collection pre-request",
+                  "// to simulate a completely unauthenticated request",
+                  "pm.request.headers.remove('Authorization');"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 401 or 403', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([401, 403]);",
+                  "});",
+                  "",
+                  "console.log('\u2705 TC-040 PASSED: Unauthenticated request blocked (' + pm.response.code + ')');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Should be blocked\",\n  \"description\": \"No auth token\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/sessions/{{sessionCode}}/stories",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "sessions",
+                "{{sessionCode}}",
+                "stories"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-041: Participant Cannot Perform Moderator Action (Error Handling)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Replace the moderator token (injected by collection) with Alice's participant token",
+                  "pm.request.headers.remove('Authorization');",
+                  "const aliceToken = pm.environment.get('aliceToken');",
+                  "pm.request.headers.add({",
+                  "    key: 'Authorization',",
+                  "    value: 'Bearer ' + aliceToken",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 403', function () {",
+                  "    pm.response.to.have.status(403);",
+                  "});",
+                  "",
+                  "console.log('\u2705 TC-041 PASSED: Participant blocked from moderator action (403)');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Should be forbidden\",\n  \"description\": \"Participant cannot create stories\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/sessions/{{sessionCode}}/stories",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "sessions",
+                "{{sessionCode}}",
+                "stories"
               ]
             }
           }
@@ -1792,7 +2082,7 @@
       ]
     },
     {
-      "name": "Phase 7: Export/Import Operations",
+      "name": "Export/Import Operations",
       "item": [
         {
           "name": "TC-037: Export Session (JSON)",

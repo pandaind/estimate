@@ -79,6 +79,19 @@
             <artifactId>jackson-datatype-hibernate6</artifactId>
             <version>2.15.3</version>
         </dependency>
+
+        <!-- PostgreSQL driver (used in prod; H2 above covers dev/test) -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- Flyway for production schema migrations (PostgreSQL support in flyway-core for Flyway 9.x) -->
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+        </dependency>
     </dependencies>
 
     <build>

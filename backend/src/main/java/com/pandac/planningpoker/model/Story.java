@@ -1,6 +1,7 @@
 package com.pandac.planningpoker.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.pandac.planningpoker.model.converter.StringListConverter;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -8,6 +9,7 @@ import lombok.AllArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Entity
@@ -30,8 +32,9 @@ public class Story {
     @Column(columnDefinition = "TEXT")
     private String acceptanceCriteria;
     
+    @Convert(converter = StringListConverter.class)
     @Column(columnDefinition = "TEXT")
-    private String tags; // JSON array
+    private List<String> tags = Collections.emptyList();
     
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

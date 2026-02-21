@@ -15,7 +15,9 @@ info:
     - Timer and auto-reveal functionality
     
     ## Authentication
-    Currently uses session codes for access. Future versions will support OAuth2/JWT.
+    All write operations and sensitive reads require a JWT Bearer token obtained from
+    `createSession` or `joinSession`. Include it as:
+    `Authorization: Bearer <token>`
     
     ## Rate Limiting
     - 100 requests per minute per IP for session creation
@@ -37,14 +39,24 @@ servers:
     description: Production server
 
 tags:
-  - name: Planning Poker
-    description: Planning Poker session management and voting APIs
+  - name: Sessions
+    description: Session lifecycle — create, join, reveal, reset
+  - name: Stories
+    description: Backlog management and estimate finalization
+  - name: Votes
+    description: Vote casting and retrieval
+  - name: Users
+    description: Session participant management
+  - name: Analytics
+    description: Session and story voting analytics
+  - name: Export / Utility
+    description: Session export, import, and utility endpoints
 
 paths:
   # ==================== SESSION ENDPOINTS ====================
   /sessions:
     post:
-      tags: [Planning Poker]
+      tags: [Sessions]
       summary: Create a new planning poker session
       description: Creates a new session with a unique 6-character code
       operationId: createSession
@@ -87,7 +99,7 @@ paths:
 
   /sessions/{sessionCode}:
     get:
-      tags: [Planning Poker]
+      tags: [Sessions]
       summary: Get session details
       description: Retrieve full session information including participants and settings
       operationId: getSession
@@ -104,7 +116,7 @@ paths:
           $ref: '#/components/responses/NotFound'
     
     put:
-      tags: [Planning Poker]
+      tags: [Sessions]
       summary: Update session settings
       description: Update session configuration (moderator only)
       operationId: updateSession
@@ -127,7 +139,7 @@ paths:
           $ref: '#/components/responses/Forbidden'
     
     delete:
-      tags: [Planning Poker]
+      tags: [Sessions]
       summary: End/delete session
       description: Terminates the session (moderator only)
       operationId: deleteSession
@@ -141,7 +153,7 @@ paths:
 
   /sessions/{sessionCode}/join:
     post:
-      tags: [Planning Poker]
+      tags: [Sessions]
       summary: Join a session
       description: Add a participant to an active session
       operationId: joinSession
@@ -163,16 +175,18 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /sessions/{sessionCode}/leave:
+  /sessions/{sessionCode}/users/{userId}/leave:
     post:
-      tags: [Planning Poker]
+      tags: [Sessions]
       summary: Leave a session
-      description: Remove user from active participants
+      description: Remove user from active participants (caller must be the user or a moderator)
       operationId: leaveSession
+      security:
+        - bearerAuth: []
       parameters:
         - $ref: '#/components/parameters/SessionCode'
         - name: userId
-          in: query
+          in: path
           required: true
           schema:
             type: integer
@@ -180,10 +194,12 @@ paths:
       responses:
         '204':
           description: Left successfully
+        '403':
+          $ref: '#/components/responses/Forbidden'
 
   /sessions/{sessionCode}/current-story:
     post:
-      tags: [Planning Poker]
+      tags: [Sessions]
       summary: Set current story for voting
       description: Change the active story being estimated
       operationId: setCurrentStory
@@ -206,7 +222,7 @@ paths:
 
   /sessions/{sessionCode}/reveal:
     post:
-      tags: [Planning Poker]
+      tags: [Sessions]
       summary: Reveal all votes
       description: Reveal all votes for the current story
       operationId: revealVotes
@@ -222,7 +238,7 @@ paths:
 
   /sessions/{sessionCode}/reset-votes:
     post:
-      tags: [Planning Poker]
+      tags: [Sessions]
       summary: Reset votes for current story
       description: Clear all votes to start a new round
       operationId: resetVotes
@@ -235,7 +251,7 @@ paths:
   # ==================== STORY ENDPOINTS ====================
   /sessions/{sessionCode}/stories:
     get:
-      tags: [Planning Poker]
+      tags: [Stories]
       summary: List all stories
       description: Get all stories in the session backlog
       operationId: getStories
@@ -279,7 +295,7 @@ paths:
 
   /sessions/{sessionCode}/stories/{storyId}:
     get:
-      tags: [Planning Poker]
+      tags: [Stories]
       summary: Get story details
       operationId: getStory
       parameters:
@@ -294,7 +310,7 @@ paths:
                 $ref: '#/components/schemas/Story'
     
     put:
-      tags: [Planning Poker]
+      tags: [Stories]
       summary: Update story
       operationId: updateStory
       parameters:
@@ -315,7 +331,7 @@ paths:
                 $ref: '#/components/schemas/Story'
     
     delete:
-      tags: [Planning Poker]
+      tags: [Stories]
       summary: Delete story
       operationId: deleteStory
       parameters:
@@ -326,8 +342,8 @@ paths:
           description: Story deleted
 
   /sessions/{sessionCode}/stories/{storyId}/finalize:
-    put:
-      tags: [Planning Poker]
+    post:
+      tags: [Stories]
       summary: Finalize story estimate
       description: Set the final agreed estimate for a story
       operationId: finalizeEstimate
@@ -357,10 +373,33 @@ paths:
               schema:
                 $ref: '#/components/schemas/Story'
 
+  /sessions/{sessionCode}/stories/{storyId}/reset:
+    post:
+      tags: [Stories]
+      summary: Reset story for revoting
+      description: Clear estimate and all votes to allow revoting (moderator only)
+      operationId: resetStory
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SessionCode'
+        - $ref: '#/components/parameters/StoryId'
+      responses:
+        '200':
+          description: Story reset
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Story'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
   # ==================== VOTING ENDPOINTS ====================
   /sessions/{sessionCode}/stories/{storyId}/votes:
     get:
-      tags: [Planning Poker]
+      tags: [Votes]
       summary: Get votes for a story
       operationId: getVotes
       parameters:
@@ -383,19 +422,15 @@ paths:
                   $ref: '#/components/schemas/Vote'
     
     post:
-      tags: [Planning Poker]
+      tags: [Votes]
       summary: Cast or update vote
       description: Submit an estimate for a story
       operationId: castVote
+      security:
+        - bearerAuth: []
       parameters:
         - $ref: '#/components/parameters/SessionCode'
         - $ref: '#/components/parameters/StoryId'
-        - name: userId
-          in: query
-          required: true
-          schema:
-            type: integer
-            format: int64
       requestBody:
         required: true
         content:
@@ -412,7 +447,7 @@ paths:
 
   /sessions/{sessionCode}/stories/{storyId}/votes/{userId}:
     delete:
-      tags: [Planning Poker]
+      tags: [Votes]
       summary: Remove vote
       description: Delete a user's vote for a story
       operationId: deleteVote
@@ -432,7 +467,7 @@ paths:
   # ==================== USER ENDPOINTS ====================
   /sessions/{sessionCode}/users:
     get:
-      tags: [Planning Poker]
+      tags: [Users]
       summary: Get active users
       description: List all participants in the session
       operationId: getUsers
@@ -456,7 +491,7 @@ paths:
 
   /sessions/{sessionCode}/users/{userId}:
     get:
-      tags: [Planning Poker]
+      tags: [Users]
       summary: Get user details
       operationId: getUser
       parameters:
@@ -476,9 +511,11 @@ paths:
                 $ref: '#/components/schemas/User'
     
     put:
-      tags: [Planning Poker]
+      tags: [Users]
       summary: Update user profile
       operationId: updateUser
+      security:
+        - bearerAuth: []
       parameters:
         - $ref: '#/components/parameters/SessionCode'
         - name: userId
@@ -504,7 +541,7 @@ paths:
   # ==================== ANALYTICS ENDPOINTS ====================
   /sessions/{sessionCode}/analytics:
     get:
-      tags: [Planning Poker]
+      tags: [Analytics]
       summary: Get session analytics
       description: Retrieve insights and metrics for the session
       operationId: getSessionAnalytics
@@ -520,7 +557,7 @@ paths:
 
   /sessions/{sessionCode}/stories/{storyId}/analytics:
     get:
-      tags: [Planning Poker]
+      tags: [Analytics]
       summary: Get story voting analytics
       description: Detailed analytics for a specific story's votes
       operationId: getStoryAnalytics
@@ -538,7 +575,7 @@ paths:
   # ==================== EXPORT/IMPORT ENDPOINTS ====================
   /sessions/{sessionCode}/export:
     get:
-      tags: [Planning Poker]
+      tags: [Export / Utility]
       summary: Export session data
       description: Export complete session including stories and votes
       operationId: exportSession
@@ -549,7 +586,7 @@ paths:
           description: Export format
           schema:
             type: string
-            enum: [json, csv, pdf]
+            enum: [json, csv]
             default: json
       responses:
         '200':
@@ -561,14 +598,10 @@ paths:
             text/csv:
               schema:
                 type: string
-            application/pdf:
-              schema:
-                type: string
-                format: binary
 
   /sessions/import:
     post:
-      tags: [Planning Poker]
+      tags: [Export / Utility]
       summary: Import session data
       description: Create a session from exported data
       operationId: importSession
@@ -589,7 +622,7 @@ paths:
   # ==================== UTILITY ENDPOINTS ====================
   /sizing-methods:
     get:
-      tags: [Planning Poker]
+      tags: [Export / Utility]
       summary: Get available sizing methods
       description: List all supported estimation scales
       operationId: getSizingMethods
@@ -605,7 +638,7 @@ paths:
 
   /health:
     get:
-      tags: [Planning Poker]
+      tags: [Export / Utility]
       summary: Health check
       description: API health status
       operationId: healthCheck
@@ -626,6 +659,15 @@ paths:
 
 # ==================== COMPONENTS ====================
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        JWT token obtained from `createSession` (moderator) or `joinSession` (participant).
+        Include as: `Authorization: Bearer <token>`
+
   parameters:
     SessionCode:
       name: sessionCode
@@ -682,6 +724,10 @@ components:
         moderatorAvatar:
           type: string
           description: Avatar identifier for moderator
+        moderatorCanVote:
+          type: boolean
+          default: false
+          description: Whether the moderator can also cast votes
         settings:
           $ref: '#/components/schemas/SessionSettings'
 
@@ -728,6 +774,9 @@ components:
           default: false
         isActive:
           type: boolean
+        moderatorCanVote:
+          type: boolean
+          default: false
         settings:
           $ref: '#/components/schemas/SessionSettings'
         statistics:
@@ -907,8 +956,13 @@ components:
     VoteRequest:
       type: object
       required:
+        - userId
         - estimate
       properties:
+        userId:
+          type: integer
+          format: int64
+          description: ID of the user casting the vote
         estimate:
           type: string
           description: Vote value (depends on sizing method)

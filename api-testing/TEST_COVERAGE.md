@@ -4,8 +4,8 @@ This document explains in simple English what our API tests check in the Plannin
 
 ## 📊 Test Summary
 
-**Total Tests:** 38 API tests
-- ✅ **All Passing:** 38/38 tests
+**Total Tests:** 44 API tests
+- ✅ **All Passing:** 44/44 tests
 
 **What We Test:** The backend API (server) without the user interface
 
@@ -21,15 +21,15 @@ These tests check if the backend server is running properly.
 - Verify we get a successful response
 - Confirm the server is healthy
 
-### ✅ API Version Check
-**What it tests:** API version information is available
-- Request the API version
-- Confirm version number is returned
-- Verify it matches expected format
+### ✅ Get Sizing Methods
+**What it tests:** All supported estimation scales are available
+- Request the list of sizing methods
+- Verify all 5 methods returned: FIBONACCI, T_SHIRT, POWERS_OF_2, LINEAR, CUSTOM
+- Confirm correct format
 
 ---
 
-## 2️⃣ Session Management (7 tests)
+## 2️⃣ Session Management (8 tests)
 
 These tests check creating, finding, and managing planning poker sessions.
 
@@ -45,6 +45,12 @@ These tests check creating, finding, and managing planning poker sessions.
 - Set session description
 - Customize voting rules
 - All settings are saved correctly
+
+### ✅ Verify moderatorCanVote=true on Custom Session
+**What it tests:** The moderatorCanVote=true setting is correctly stored and returned (TC-042)
+- Retrieve the custom session created with `moderatorCanVote: true`
+- Confirm the field is present in the session response
+- Verify the value is `true` — symmetric check to TC-021
 
 ### ✅ Get Session by Code
 **What it tests:** Can look up a session using its code
@@ -170,15 +176,27 @@ These tests check creating and managing stories (work items to estimate).
 
 ---
 
-## 5️⃣ Voting Flow (12 tests)
+## 5️⃣ Voting Flow (15 tests)
 
 These tests check the core voting and estimation functionality.
+
+### ✅ Verify moderatorCanVote Setting (moderatorCanVote=false)
+**What it tests:** The moderatorCanVote field is correctly persisted and returned
+- Retrieve the basic session (created with moderatorCanVote=false)
+- Verify the `moderatorCanVote` field is present in the response
+- Confirm it is `false` as configured during session creation
 
 ### ✅ Cast Vote (Regular User)
 **What it tests:** Participant can submit a vote
 - Send vote value (e.g., 5 points)
 - Vote linked to user and story
 - Vote is recorded in database
+
+### ✅ Duplicate Vote Updates Existing Vote (Upsert)
+**What it tests:** Re-voting overrides the previous estimate rather than creating a duplicate (TC-043)
+- Same user submits a second vote on the same story
+- Server updates the existing vote (upsert behaviour)
+- New estimate value is returned — old value is gone
 
 ### ✅ Cast Multiple Votes
 **What it tests:** Multiple users can vote on same story
@@ -230,6 +248,13 @@ These tests check the core voting and estimation functionality.
 - Story status becomes "finalized"
 - Estimate is saved
 
+### ✅ Reset Story for Revoting
+**What it tests:** Can wipe a story's estimate and votes to allow revoting
+- Story has a finalized estimate
+- Moderator sends reset command
+- Story status reverts to NOT_ESTIMATED
+- All votes are cleared for fresh round
+
 ### ✅ Reset Votes (Revote)
 **What it tests:** Can clear votes to revote on a story
 - Story has existing votes
@@ -253,29 +278,36 @@ These tests check the core voting and estimation functionality.
 
 ---
 
-## 6️⃣ Advanced Scenarios (3 tests)
+## 6️⃣ Advanced Scenarios (5 tests)
 
 These tests check complex real-world situations.
 
-### ✅ Complete Voting Round
-**What it tests:** Full voting workflow from start to finish
-- Create session → Join users → Add story → Vote → Reveal → Finalize
-- Verify everything works together
-- Data consistency throughout
+### ✅ Non-Numeric Votes (?, ☕, ∞)
+**What it tests:** Special voting cards work (TC-034)
+- Vote with "?" (don't know), "☕" (need break), "∞" (too large)
+- All special string values are stored and returned correctly
 
-### ✅ Multiple Stories in Session
-**What it tests:** Session can handle multiple stories
-- Create several stories
-- Vote on each one separately
-- Each story maintains independent vote data
-- No vote mixing between stories
+### ✅ Request Without Auth Token (Error Handling)
+**What it tests:** Protected endpoints reject requests with no authentication token (TC-040)
+- Send a moderator-only request with the auth token deliberately cleared
+- Server returns 401 or 403
+- Confirms JWT guard is active on all protected routes
 
-### ✅ Concurrent User Actions
-**What it tests:** Multiple users acting at the same time
-- Users join simultaneously
-- Multiple votes submitted at once
-- Server handles concurrent requests correctly
-- No data corruption or race conditions
+### ✅ Participant Cannot Perform Moderator Action (Error Handling)
+**What it tests:** Role-based access control blocks participants from moderator endpoints (TC-041)
+- Authenticate as Alice (PARTICIPANT role) and call a MODERATOR-only endpoint
+- Server returns 403 Forbidden
+- Confirms `@PreAuthorize("hasRole('MODERATOR')")` is enforced
+
+### ✅ Delete Story
+**What it tests:** Stories can be permanently removed (TC-035)
+- Delete a story by ID
+- Story no longer appears in story list
+
+### ✅ Delete Session
+**What it tests:** Sessions can be soft-deleted (TC-036)
+- Delete a session by code
+- Session is no longer accessible
 
 ---
 
@@ -360,7 +392,7 @@ When these tests pass, we know that:
 **Technology:** Newman (Postman's command-line tool)
 
 **Test Process:**
-1. Load the test collection (38 pre-defined API requests)
+1. Load the test collection (44 pre-defined API requests)
 2. Start with health check
 3. Create test session
 4. Run all scenarios
@@ -395,7 +427,7 @@ Each phase depends on the previous ones completing successfully.
 
 ## 📝 Test Files Location
 
-- `planning-poker-api.postman_collection.json` - All 38 test cases
+- `planning-poker-api.postman_collection.json` - All 40 test cases
 - `environment.json` - Test configuration (URLs, auto-generated IDs)
 - `run-tests.sh` - Script to run tests and generate reports
 - `reports/` - Test results (HTML and JSON files)

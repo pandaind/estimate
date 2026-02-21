@@ -1,7 +1,9 @@
 package com.pandac.planningpoker.security;
 
+import com.pandac.planningpoker.exception.SessionMembershipException;
 import com.pandac.planningpoker.exception.UnauthorizedAccessException;
 import com.pandac.planningpoker.model.Session;
+import com.pandac.planningpoker.model.Story;
 import com.pandac.planningpoker.model.User;
 import com.pandac.planningpoker.repository.SessionRepository;
 import com.pandac.planningpoker.repository.UserRepository;
@@ -120,11 +122,52 @@ public class SessionAccessValidator {
     
     /**
      * Check if the authenticated user is a moderator.
-     * 
+     *
      * @return true if user has MODERATOR role
      */
     public boolean isAuthenticatedUserModerator() {
         UserRole role = getAuthenticatedUserRole();
         return role == UserRole.MODERATOR;
+    }
+
+    // ── Ownership guards ────────────────────────────────────────────────────────
+
+    /**
+     * Ensures a Story belongs to the given Session.
+     *
+     * @throws SessionMembershipException if the story is not part of the session
+     */
+    public void requireStoryBelongsToSession(Story story, Session session) {
+        if (!story.getSession().getId().equals(session.getId())) {
+            throw new SessionMembershipException(
+                    "Story " + story.getId() + " does not belong to session " + session.getSessionCode());
+        }
+    }
+
+    /**
+     * Ensures a User belongs to the given Session.
+     *
+     * @throws SessionMembershipException if the user is not part of the session
+     */
+    public void requireUserBelongsToSession(User user, Session session) {
+        if (!user.getSession().getId().equals(session.getId())) {
+            throw new SessionMembershipException(
+                    "User " + user.getId() + " does not belong to session " + session.getSessionCode());
+        }
+    }
+
+    /**
+     * Returns {@code true} when the authenticated caller either has the MODERATOR role
+     * or has the same user ID as {@code targetUserId}.
+     *
+     * <p>Intended for use with {@code @PreAuthorize}:
+     * <pre>@PreAuthorize("@sessionAccessValidator.isCallerOrModerator(#userId)")</pre>
+     */
+    public boolean isCallerOrModerator(Long targetUserId) {
+        if (isAuthenticatedUserModerator()) {
+            return true;
+        }
+        Long callerId = getAuthenticatedUserId();
+        return callerId.equals(targetUserId);
     }
 }
