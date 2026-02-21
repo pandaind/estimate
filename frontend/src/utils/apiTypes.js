@@ -1,6 +1,10 @@
 /**
- * API Type Definitions (JSDoc)
- * Type definitions for EstiMate API requests and responses
+ * API Type Definitions (JSDoc — documentation only, not imported at runtime)
+ *
+ * This file contains JSDoc @typedef declarations used solely as inline
+ * documentation / IDE auto-complete helpers.  It is intentionally NOT
+ * imported by any component.  If runtime validation is ever needed, migrate
+ * these definitions to Zod schemas instead.
  */
 
 // ==================== ENUMS ====================

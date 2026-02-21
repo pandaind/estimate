@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { getCardColor, getCardEmoji, SIZING_METHODS } from '../utils/constants';
 import { voteAPI } from '../utils/api';
+import { toast } from 'sonner';
+import { parseError } from '../utils/errorHandler';
+import { cn } from '../utils/cn';
 
 const EstimationCards = ({ session, currentStory, userName, userId, isModerator = false, onVoteSubmitted }) => {
   const [selectedCard, setSelectedCard] = useState(null);
@@ -27,8 +30,7 @@ const EstimationCards = ({ session, currentStory, userName, userId, isModerator 
     if (!currentStory || isSubmitting || !canVote) return;
     
     if (!userId) {
-      console.error('Cannot vote: userId is not set');
-      alert('Cannot vote: User ID is not available. Please rejoin the session.');
+      toast.error('User ID is not available. Please rejoin the session.');
       return;
     }
     
@@ -42,7 +44,7 @@ const EstimationCards = ({ session, currentStory, userName, userId, isModerator 
       });
       onVoteSubmitted();
     } catch (error) {
-      console.error('Error submitting vote:', error);
+      toast.error(parseError(error).message);
       setSelectedCard(null);
     } finally {
       setIsSubmitting(false);
@@ -102,11 +104,12 @@ const EstimationCards = ({ session, currentStory, userName, userId, isModerator 
                   key={level}
                   type="button"
                   onClick={() => setConfidence(level)}
-                  className={`w-10 h-10 rounded-full text-sm font-medium transition-colors ${
+                  className={cn(
+                    'w-10 h-10 rounded-full text-sm font-medium transition-colors',
                     confidence >= level
                       ? 'bg-yellow-400 text-yellow-900'
                       : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
-                  }`}
+                  )}
                 >
                   ⭐
                 </button>
@@ -128,11 +131,14 @@ const EstimationCards = ({ session, currentStory, userName, userId, isModerator 
               disabled={isSubmitting || !canVote}
               aria-label={`Vote ${value} points`}
               role="button"
-              className={`relative min-h-[140px] flex flex-col items-center justify-center text-2xl font-bold rounded-xl border-2 transition-all ${
-                isSelected 
-                  ? 'border-blue-600 bg-blue-50 dark:bg-blue-950 scale-105 shadow-lg' 
-                  : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 hover:border-blue-400 hover:shadow-md'
-              } ${getCardColor(value)} ${!canVote ? 'opacity-60 cursor-not-allowed' : ''} disabled:opacity-50`}
+              className={cn(
+                'relative min-h-[140px] flex flex-col items-center justify-center text-2xl font-bold rounded-xl border-2 transition-all disabled:opacity-50',
+                isSelected
+                  ? 'border-blue-600 bg-blue-50 dark:bg-blue-950 scale-105 shadow-lg'
+                  : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 hover:border-blue-400 hover:shadow-md',
+                getCardColor(value),
+                !canVote && 'opacity-60 cursor-not-allowed'
+              )}
             >
               {emoji && <div className="text-3xl mb-2">{emoji}</div>}
               <div className={emoji ? 'text-lg' : 'text-3xl'}>

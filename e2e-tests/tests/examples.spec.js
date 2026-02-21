@@ -24,8 +24,8 @@ test.describe('Fixture Examples', () => {
   test('should use multiUser fixture for collaboration tests', async ({ multiUser }) => {
     const { facilitator, participant1, participant2, sessionCode } = multiUser;
     
-    // Verify participant count is visible (should show "3 participants")
-    await expect(facilitator.locator('text=participants')).toBeVisible();
+    // Verify participant count is visible (should show "3 participants" — all 3 users in session)
+    await expect(facilitator.locator('text=participants')).toBeVisible({ timeout: 10000 });
     
     // Add a story as facilitator
     await addStory(facilitator, {
@@ -33,12 +33,12 @@ test.describe('Fixture Examples', () => {
       description: 'Testing with multiple users'
     });
     
-    // Wait for sync
+    // Wait for sync — give WebSocket time to deliver STORY_ACTIVATED to all participants
     await facilitator.waitForTimeout(1000);
     
-    // All users should see the story
-    await expect(participant1.locator('text=Multi-user Story').first()).toBeVisible();
-    await expect(participant2.locator('text=Multi-user Story').first()).toBeVisible();
+    // All users should see the story title in CurrentStoryBanner
+    await expect(participant1.locator('text=Multi-user Story').first()).toBeVisible({ timeout: 10000 });
+    await expect(participant2.locator('text=Multi-user Story').first()).toBeVisible({ timeout: 10000 });
     
     // All users vote
     await castVote(facilitator, 5);
@@ -50,14 +50,14 @@ test.describe('Fixture Examples', () => {
     
     // Navigate facilitator to Results tab to see summary
     await facilitator.click('button:has-text("Results")');
-    await facilitator.waitForTimeout(500);
+    await facilitator.waitForTimeout(2000); // Allow WebSocket VOTES_REVEALED to update session.votesRevealed
     
     // Facilitator should see results summary
-    await expect(facilitator.locator('text=Summary')).toBeVisible();
+    await expect(facilitator.locator('text=Summary')).toBeVisible({ timeout: 10000 });
     
-    // Participants should still see the story (votes revealed state depends on session settings)
-    await expect(participant1.locator('text=Multi-user Story').first()).toBeVisible();
-    await expect(participant2.locator('text=Multi-user Story').first()).toBeVisible();
+    // Participants should still see the story (via CurrentStoryBanner)
+    await expect(participant1.locator('text=Multi-user Story').first()).toBeVisible({ timeout: 10000 });
+    await expect(participant2.locator('text=Multi-user Story').first()).toBeVisible({ timeout: 10000 });
   });
 
   test('should handle voting consensus with fixtures', async ({ multiUser }) => {
@@ -77,10 +77,10 @@ test.describe('Fixture Examples', () => {
     
     // Navigate to Results tab to see consensus message
     await facilitator.click('button:has-text("Results")');
-    await facilitator.waitForTimeout(500);
+    await facilitator.waitForTimeout(2000); // Allow WebSocket VOTES_REVEALED to update session.votesRevealed
     
     // Should show consensus message
-    await expect(facilitator.locator('text=Consensus reached')).toBeVisible();
+    await expect(facilitator.locator('text=Consensus reached')).toBeVisible({ timeout: 10000 });
   });
 
   test('should handle voting divergence', async ({ multiUser }) => {
@@ -100,9 +100,9 @@ test.describe('Fixture Examples', () => {
     
     // Navigate to Results tab to see distribution
     await facilitator.click('button:has-text("Results")');
-    await facilitator.waitForTimeout(500);
+    await facilitator.waitForTimeout(2000); // Allow WebSocket VOTES_REVEALED to update session.votesRevealed
     
     // Should show distribution of votes
-    await expect(facilitator.locator('text=Distribution')).toBeVisible();
+    await expect(facilitator.locator('text=Distribution')).toBeVisible({ timeout: 10000 });
   });
 });

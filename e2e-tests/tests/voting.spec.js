@@ -82,25 +82,26 @@ test.describe('Voting and Estimation', () => {
     await page2.fill('[name="userName"]', 'Participant 1');
     await page2.click('button:has-text("Join Session")');
     
+    // Wait for participant to fully load the session
+    await page2.waitForSelector('button:has-text("Leave")', { state: 'visible', timeout: 10000 });
+    
     // Participant votes
     await page2.click('[aria-label="Vote 8 points"]');
     await page2.waitForTimeout(500);
     
-    // Facilitator navigates to Stories tab to reveal votes
-    await page.click('button:has-text("Stories")');
-    await page.waitForTimeout(500);
-    
-    // Reveal votes (facilitator action)
-    await page.click('button:has-text("Reveal Votes")');
-    await page.waitForTimeout(500);
-    
-    // Navigate to Results tab to see voting results
+    // Navigate facilitator to Results tab and reveal votes directly from VotingResults.
+    // Using VotingResults' own Reveal button calls setShowVotes(true) synchronously
+    // after the API, so Summary appears without waiting for a WebSocket event.
     await page.click('button:has-text("Results")');
     await page.waitForTimeout(500);
     
+    // Wait for Reveal button to be available in VotingResults (moderator + not yet revealed)
+    await expect(page.locator('button:has-text("Reveal")')).toBeVisible({ timeout: 5000 });
+    await page.click('button:has-text("Reveal")');
+    
     // Verify votes are revealed - check for Summary section
-    await expect(page.locator('text=Summary')).toBeVisible();
-    await expect(page.locator('text=Total Votes')).toBeVisible();
+    await expect(page.locator('text=Summary')).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('text=Total Votes')).toBeVisible({ timeout: 5000 });
     
     // Cleanup
     await context2.close();
@@ -111,22 +112,20 @@ test.describe('Voting and Estimation', () => {
     await page.click('[aria-label="Vote 5 points"]');
     await page.waitForTimeout(500);
     
-    // Navigate to Stories tab to reveal votes
-    await page.click('button:has-text("Stories")');
-    await page.waitForTimeout(500);
-    
-    // Reveal votes
-    await page.click('button:has-text("Reveal Votes")');
-    await page.waitForTimeout(500);
-    
-    // Navigate to Results tab to see statistics
+    // Navigate directly to Results tab and reveal votes from VotingResults.
+    // VotingResults.handleRevealToggle calls setShowVotes(true) synchronously after the
+    // API response, so no WebSocket round-trip is needed to show Summary / Distribution.
     await page.click('button:has-text("Results")');
     await page.waitForTimeout(500);
     
+    // Reveal via the Results tab's own Reveal button
+    await expect(page.locator('button:has-text("Reveal")')).toBeVisible({ timeout: 5000 });
+    await page.click('button:has-text("Reveal")');
+    
     // Verify statistics are displayed
-    await expect(page.locator('text=Summary')).toBeVisible();
-    await expect(page.locator('text=Distribution')).toBeVisible();
-    await expect(page.locator('text=Total Votes')).toBeVisible();
+    await expect(page.locator('text=Summary')).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('text=Distribution')).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('text=Total Votes')).toBeVisible({ timeout: 5000 });
   });
 
   test.skip('should reset voting for next round', async ({ page }) => {

@@ -35,11 +35,16 @@ test.describe('Real-time Collaboration', () => {
     await page2.fill('[name="userName"]', 'Developer 1');
     await page2.click('button:has-text("Join Session")');
     
-    // Wait a bit for WebSocket update
-    await page.waitForTimeout(1000);
+    // Wait for participant to fully load and their WebSocket subscription to become active.
+    // waitForSelector('Leave') is more reliable than waitForURL because it confirms the
+    // session component is mounted — at that point the participant's STOMP connection
+    // has been established and the backend has sent USER_JOINED to the facilitator.
+    await page2.waitForSelector('button:has-text("Leave")', { state: 'visible', timeout: 10000 });
     
-    // Verify participant count increased to 2
-    await expect(page.locator('text=participants')).toBeVisible();
+    // Wait for facilitator's UserPresence to update via WebSocket USER_JOINED event.
+    // The useSessionWebSocket hook (now deps on `connected`) ensures the facilitator
+    // has an active subscription, so fetchUsers() fires when USER_JOINED is received.
+    await expect(page.locator('text=participants')).toBeVisible({ timeout: 10000 });
     
     // Cleanup
     await context2.close();
@@ -136,7 +141,10 @@ test.describe('Real-time Collaboration', () => {
     await page2.fill('[name="userName"]', 'Developer 1');
     await page2.click('button:has-text("Join Session")');
     
-    // Facilitator navigates to Stories tab and adds a story
+    // Wait for participant's session view to fully mount and their WebSocket to connect.
+    // This ensures page2 has an active STORY subscription before the facilitator
+    // activates the story, so the STORY_ACTIVATED event is delivered to page2.
+    await page2.waitForSelector('button:has-text("Leave")', { state: 'visible', timeout: 10000 });
     await page.click('button:has-text("Stories")');
     await page.waitForTimeout(500); // Wait for tab transition
     
@@ -151,11 +159,11 @@ test.describe('Real-time Collaboration', () => {
     await page.click('button:has-text("Activate for Voting")');
     await page.waitForTimeout(500);
     
-    // Wait for sync
-    await page2.waitForTimeout(1000);
+    // Wait for sync — give WebSocket time to deliver STORY_ACTIVATED to participant
+    await page2.waitForTimeout(2000);
     
-    // Participant should see the new story
-    await expect(page2.locator('text=New Feature Story').first()).toBeVisible();
+    // Participant should see the story title in the CurrentStoryBanner
+    await expect(page2.locator('text=New Feature Story').first()).toBeVisible({ timeout: 10000 });
     
     // Cleanup
     await context2.close();

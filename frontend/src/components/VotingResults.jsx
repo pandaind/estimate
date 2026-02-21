@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { voteAPI, sessionAPI } from '../utils/api';
 import { getCardColor } from '../utils/constants';
+import { toast } from 'sonner';
+import { parseError } from '../utils/errorHandler';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faChartBar, faCircleCheck } from '@fortawesome/free-solid-svg-icons';
 import { useWebSocket } from './websocket/WebSocketProvider';
@@ -43,7 +45,7 @@ const VotingResults = ({ session, currentStory, onFinalizeEstimate, isModerator 
           fetchVotes();
         }
       } catch (error) {
-        console.error('Error parsing reveal message:', error);
+        toast.error('Failed to process server message.');
       }
     });
     
@@ -63,7 +65,7 @@ const VotingResults = ({ session, currentStory, onFinalizeEstimate, isModerator 
           fetchVotes();
         }
       } catch (error) {
-        console.error('Error parsing story message:', error);
+        toast.error('Failed to process server message.');
       }
     });
 
@@ -80,7 +82,7 @@ const VotingResults = ({ session, currentStory, onFinalizeEstimate, isModerator 
       const response = await voteAPI.get(session.sessionCode, currentStory.id);
       setVotes(response.data);
     } catch (error) {
-      console.error('Error fetching votes:', error);
+      toast.error(parseError(error).message);
     }
   };
 
@@ -94,8 +96,7 @@ const VotingResults = ({ session, currentStory, onFinalizeEstimate, isModerator 
       setShowVotes(true);
       await fetchVotes();
     } catch (error) {
-      console.error('Error revealing votes:', error);
-      alert('Failed to reveal votes. Please try again.');
+      toast.error(parseError(error).message);
     } finally {
       setIsLoading(false);
     }
@@ -109,7 +110,7 @@ const VotingResults = ({ session, currentStory, onFinalizeEstimate, isModerator 
       await onFinalizeEstimate(selectedFinalEstimate);
       setSelectedFinalEstimate('');
     } catch (error) {
-      console.error('Error finalizing estimate:', error);
+      toast.error(parseError(error).message);
     } finally {
       setIsLoading(false);
     }

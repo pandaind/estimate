@@ -1,3 +1,12 @@
+// ==================== STORAGE KEYS ====================
+export const STORAGE_KEYS = {
+  SESSION:      'pp_session',
+  USER_NAME:    'pp_userName',
+  USER_ID:      'pp_userId',
+  IS_MODERATOR: 'pp_isModerator',
+  ACTIVE_TAB:   'pp_activeTab',
+};
+
 export const SIZING_METHODS = {
   FIBONACCI: {
     name: 'Fibonacci',

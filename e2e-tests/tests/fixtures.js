@@ -25,15 +25,14 @@ export const test = base.extend({
     
     await page.click('button:has-text("Create Session")');
     
-    // Wait for session view to load (app uses state-based routing, not URL routing)
-    await page.waitForSelector('button:has-text("Leave")', { state: 'visible', timeout: 10000 });
-    
-    // Get session code from the button
-    const sessionCodeButton = page.locator('span:has-text("Code:")').locator('..').locator('button').locator('span').first();
-    const sessionCode = await sessionCodeButton.textContent();
-    
+    // Wait for React Router to navigate to /session/:code
+    await page.waitForURL(/\/session\//, { timeout: 10000 });
+
+    // Extract session code from URL
+    const sessionCode = page.url().split('/session/')[1];
+
     // Provide the session info to the test
-    await use({ sessionCode: sessionCode.trim() });
+    await use({ sessionCode });
     
     // Teardown: Could add cleanup logic here if needed
   },
@@ -61,12 +60,16 @@ export const test = base.extend({
     
     await page.click('button:has-text("Create Session")');
     
-    // Wait for session view to load
+    // Wait for React Router to navigate to /session/:code
+    await page.waitForURL(/\/session\//, { timeout: 10000 });
+    // Wait for the session view to fully mount — ensures PlanningPokerSession is rendered
+    // and the WebSocket has had time to connect before participants start joining.
+    // Without this, USER_JOINED events may fire before subscriptions are active.
     await page.waitForSelector('button:has-text("Leave")', { state: 'visible', timeout: 10000 });
-    
-    // Get session code from the button
-    const sessionCodeButton = page.locator('span:has-text("Code:")').locator('..').locator('button').locator('span').first();
-    const sessionCode = await sessionCodeButton.textContent();
+    await page.waitForTimeout(500); // Extra time for WebSocket subscription to establish
+
+    // Extract session code from URL
+    const sessionCode = page.url().split('/session/')[1];
     
     // Create separate contexts for participants to isolate localStorage
     const participant1Context = await browser.newContext();

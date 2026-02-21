@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { toast } from 'sonner';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
@@ -35,8 +36,8 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     const errorMessage = error.response?.data?.message || error.message || 'An error occurred';
-    console.error('API Error:', errorMessage);
-    
+    toast.error(errorMessage);
+
     // Clear token on 401 Unauthorized
     if (error.response?.status === 401) {
       tokenManager.clear();

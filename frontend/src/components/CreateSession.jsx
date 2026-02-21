@@ -4,6 +4,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUsers } from '@fortawesome/free-solid-svg-icons';
 import { sessionAPI, tokenManager } from '../utils/api';
 import { SIZING_METHODS } from '../utils/constants';
+import { toast } from 'sonner';
+import { parseError } from '../utils/errorHandler';
 
 const CreateSession = ({ onSessionCreated }) => {
   const [formData, setFormData] = useState({
@@ -40,8 +42,7 @@ const CreateSession = ({ onSessionCreated }) => {
       // Pass session and moderator info to parent
       onSessionCreated(session, formData.moderatorName, moderatorId);
     } catch (error) {
-      console.error('Error creating session:', error);
-      alert(error.response?.data?.message || 'Failed to create session');
+      toast.error(parseError(error).message);
     } finally {
       setIsLoading(false);
     }

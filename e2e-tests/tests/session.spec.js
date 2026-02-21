@@ -16,8 +16,9 @@ test.describe('Session Management', () => {
     // Click create session button
     await page.click('button:has-text("Create Session")');
     
-    // Verify session was created (app uses state-based routing, not URL routing)
-    await expect(page.locator('h1:has-text("Sprint Planning - Test Session")')).toBeVisible({ timeout: 10000 });
+    // Verify session was created — React Router navigates to /session/:code
+    await expect(page).toHaveURL(/\/session\/.+/, { timeout: 10000 });
+    await expect(page.locator('h1:has-text("Sprint Planning - Test Session")')).toBeVisible();
     await expect(page.locator('button:has-text("Leave")')).toBeVisible();
   });
 

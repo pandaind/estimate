@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { storyAPI, voteAPI, sessionAPI } from '../utils/api';
+import { toast } from 'sonner';
+import { parseError } from '../utils/errorHandler';
+import { cn } from '../utils/cn';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus, faPlay, faCircleCheck, faEye, faLock, faArrowRotateLeft } from '@fortawesome/free-solid-svg-icons';
 
@@ -59,7 +62,7 @@ const StoryList = ({ session, onStorySelected, currentStory, userName, isModerat
       const response = await storyAPI.getAll(session.sessionCode);
       setStories(response.data);
     } catch (error) {
-      console.error('Error fetching stories:', error);
+      toast.error(parseError(error).message);
     }
   };
 
@@ -71,7 +74,7 @@ const StoryList = ({ session, onStorySelected, currentStory, userName, isModerat
         [storyId]: response.data
       }));
     } catch (error) {
-      console.error('Error fetching votes:', error);
+      toast.error(parseError(error).message);
     }
   };
 
@@ -91,7 +94,7 @@ const StoryList = ({ session, onStorySelected, currentStory, userName, isModerat
       onToggleCreateForm();
       fetchStories();
     } catch (error) {
-      console.error('Error creating story:', error);
+      toast.error(parseError(error).message);
     } finally {
       setIsCreating(false);
     }
@@ -123,8 +126,7 @@ const StoryList = ({ session, onStorySelected, currentStory, userName, isModerat
         return newSet;
       });
     } catch (error) {
-      console.error('Error revealing votes:', error);
-      alert('Failed to reveal votes. Please try again.');
+      toast.error(parseError(error).message);
     }
   };
 
@@ -133,7 +135,7 @@ const StoryList = ({ session, onStorySelected, currentStory, userName, isModerat
       await storyAPI.finalize(session.sessionCode, story.id, estimate, null);
       fetchStories();
     } catch (error) {
-      console.error('Error finalizing story:', error);
+      toast.error(parseError(error).message);
     }
   };
 
@@ -155,8 +157,7 @@ const StoryList = ({ session, onStorySelected, currentStory, userName, isModerat
       });
       fetchStories();
     } catch (error) {
-      console.error('Error resetting story:', error);
-      alert('Failed to reset story. Please try again.');
+      toast.error(parseError(error).message);
     }
   };
 
@@ -243,11 +244,10 @@ const StoryList = ({ session, onStorySelected, currentStory, userName, isModerat
           return (
             <div
               key={story.id}
-              className={`bg-white dark:bg-gray-900 rounded-xl border-2 transition-all ${
-                isActive 
-                  ? 'border-blue-600 shadow-lg' 
-                  : 'border-gray-200 dark:border-gray-800'
-              }`}
+              className={cn(
+                'bg-white dark:bg-gray-900 rounded-xl border-2 transition-all',
+                isActive ? 'border-blue-600 shadow-lg' : 'border-gray-200 dark:border-gray-800'
+              )}
             >
               <div className="p-5">
                 {/* Story Header */}

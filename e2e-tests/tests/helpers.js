@@ -27,14 +27,11 @@ export async function createSession(page, { sessionName = 'Test Session', facili
   
   await page.click('button:has-text("Create Session")');
   
-  // Wait for session view to load (app uses state-based routing, not URL routing)
-  await page.waitForSelector('button:has-text("Leave")', { state: 'visible', timeout: 10000 });
-  
-  // Get session code from the displayed button (format: button contains only the code)
-  const sessionCodeButton = page.locator('button:has-text("Code:")').locator('..').locator('button').nth(0);
-  const sessionCode = await sessionCodeButton.textContent();
-  // Remove any non-alphanumeric characters (like icons)
-  return sessionCode.trim().replace(/[^A-Z0-9]/g, '');
+  // Wait for React Router to navigate to /session/:code
+  await page.waitForURL(/\/session\//,  { timeout: 10000 });
+
+  // Extract session code directly from the URL (reliable with React Router)
+  return page.url().split('/session/')[1];
 }
 
 /**
@@ -83,11 +80,13 @@ export async function addStory(page, { title, description = '' }) {
   
   // Activate the story for voting
   await page.click('button:has-text("Activate for Voting")');
-  await page.waitForTimeout(500); // Wait for activation
+  await page.waitForTimeout(1000); // Wait for activation + WebSocket STORY_ACTIVATED
   
   // Navigate back to Estimate tab for voting
   await page.click('button:has-text("Estimate")');
-  await page.waitForTimeout(500); // Wait for tab transition
+  // Wait for voting cards to actually appear — confirms currentStory is set and
+  // EstimationCards has rendered. This is more reliable than a fixed timeout.
+  await page.waitForSelector('[aria-label$="points"]', { state: 'visible', timeout: 15000 });
 }
 
 /**
