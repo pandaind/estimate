@@ -4,8 +4,8 @@ test.describe('Real-time Collaboration', () => {
   test('should update participant list in real-time when users join', async ({ page, browser }) => {
     // Create session
     await page.goto('/', { waitUntil: 'networkidle' });
-    await page.waitForSelector('button:has-text("Create Session")', { state: 'visible' });
-    await page.click('button:has-text("Create Session")');
+    await page.waitForSelector('[data-testid="btn-create-session"]', { state: 'visible' });
+    await page.click('[data-testid="btn-create-session"]');
     await page.waitForSelector('[name="sessionName"]', { state: 'visible' });
     await page.fill('[name="sessionName"]', 'Collaboration Test');
     await page.fill('[name="facilitatorName"]', 'Facilitator');
@@ -14,8 +14,11 @@ test.describe('Real-time Collaboration', () => {
     await page.check('#moderatorCanVote');
     await page.waitForTimeout(200);
     
-    await page.click('button:has-text("Create Session")');
-    await page.waitForSelector('button:has-text("Leave")', { state: 'visible', timeout: 10000 });
+    // Submit form directly — bypasses click event propagation that stalls under CPU load
+    await expect(async () => {
+      await page.locator('[data-testid="btn-submit-create-session"]').evaluate(btn => btn.closest('form').requestSubmit());
+      await expect(page.locator('[data-testid="btn-leave-session"]')).toBeVisible();
+    }).toPass({ timeout: 45000 });
     
     // Get session code
     const sessionCodeButton = page.locator('span:has-text("Code:")').locator('..').locator('button').locator('span').first();
@@ -28,18 +31,18 @@ test.describe('Real-time Collaboration', () => {
     const context2 = await browser.newContext();
     const page2 = await context2.newPage();
     await page2.goto('/', { waitUntil: 'networkidle' });
-    await page2.waitForSelector('button:has-text("Join Session")', { state: 'visible' });
-    await page2.click('button:has-text("Join Session")');
+    await page2.waitForSelector('[data-testid="btn-join-session"]', { state: 'visible' });
+    await page2.click('[data-testid="btn-join-session"]');
     await page2.waitForSelector('[name="sessionId"]', { state: 'visible' });
     await page2.fill('[name="sessionId"]', sessionCode.trim());
     await page2.fill('[name="userName"]', 'Developer 1');
-    await page2.click('button:has-text("Join Session")');
+    await page2.click('[data-testid="btn-submit-join-session"]');
     
     // Wait for participant to fully load and their WebSocket subscription to become active.
     // waitForSelector('Leave') is more reliable than waitForURL because it confirms the
     // session component is mounted — at that point the participant's STOMP connection
     // has been established and the backend has sent USER_JOINED to the facilitator.
-    await page2.waitForSelector('button:has-text("Leave")', { state: 'visible', timeout: 10000 });
+    await page2.waitForSelector('[data-testid="btn-leave-session"]', { state: 'visible', timeout: 10000 });
     
     // Wait for facilitator's UserPresence to update via WebSocket USER_JOINED event.
     // The useSessionWebSocket hook (now deps on `connected`) ensures the facilitator

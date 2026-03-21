@@ -104,6 +104,7 @@ const EstimationCards = ({ session, currentStory, userName, userId, isModerator 
                   key={level}
                   type="button"
                   onClick={() => setConfidence(level)}
+                  aria-label={`Confidence level ${level} of 5`}
                   className={cn(
                     'w-10 h-10 rounded-full text-sm font-medium transition-colors',
                     confidence >= level

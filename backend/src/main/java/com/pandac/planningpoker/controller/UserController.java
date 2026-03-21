@@ -7,6 +7,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -22,10 +24,16 @@ public class UserController {
     private final IUserService userService;
 
     @GetMapping
-    @Operation(summary = "Get active users", description = "List all participants in the session")
-    public ResponseEntity<List<User>> getActiveUsers(
+    @Operation(summary = "Get active users", description = "List all participants in the session. Use page/size for pagination.")
+    public ResponseEntity<?> getActiveUsers(
             @PathVariable String sessionCode,
-            @RequestParam(defaultValue = "true") Boolean activeOnly) {
+            @RequestParam(defaultValue = "true") Boolean activeOnly,
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer size) {
+        if (page != null && size != null) {
+            Page<User> users = userService.getActiveUsersPage(sessionCode, activeOnly, PageRequest.of(page, size));
+            return ResponseEntity.ok(users);
+        }
         List<User> users = userService.getActiveUsers(sessionCode, activeOnly);
         return ResponseEntity.ok(users);
     }

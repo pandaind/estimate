@@ -95,6 +95,7 @@ const CreateSession = ({ onSessionCreated }) => {
             Sizing Method
           </label>
           <select
+            aria-label="Sizing method"
             value={formData.sizingMethod}
             onChange={(e) => setFormData({ ...formData, sizingMethod: e.target.value })}
             className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -128,6 +129,7 @@ const CreateSession = ({ onSessionCreated }) => {
             </label>
             <input
               type="text"
+              aria-label="Custom sizing values"
               value={formData.customValues}
               onChange={(e) => setFormData({ ...formData, customValues: e.target.value })}
               className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -157,6 +159,7 @@ const CreateSession = ({ onSessionCreated }) => {
 
         <button
           type="submit"
+          data-testid="btn-submit-create-session"
           disabled={isLoading}
           className="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
         >

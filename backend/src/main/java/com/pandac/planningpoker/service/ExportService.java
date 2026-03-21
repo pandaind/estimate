@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -52,7 +52,7 @@ public class ExportService {
         export.setStories(stories);
         export.setUsers(users);
         export.setVotes(allVotes);
-        export.setExportedAt(LocalDateTime.now());
+        export.setExportedAt(OffsetDateTime.now());
         
         return export;
     }
@@ -116,7 +116,7 @@ public class ExportService {
                 src.getAutoReveal(), src.getTimerEnabled(), src.getTimerDuration(),
                 src.getAllowChangeVote(), src.getAllowObservers(), src.getRequireConfidence()));
         newSession.setVotesRevealed(false); // Reset voting state
-        newSession.setIsActive(true);
+        newSession.setActive(true);
         
         Session savedSession = sessionRepository.save(newSession);
         
@@ -125,9 +125,9 @@ public class ExportService {
             User newUser = new User();
             newUser.setName(originalUser.getName());
             newUser.setAvatar(originalUser.getAvatar());
-            newUser.setIsObserver(originalUser.getIsObserver());
-            newUser.setIsModerator(originalUser.getIsModerator());
-            newUser.setIsActive(true);
+            newUser.setObserver(originalUser.isObserver());
+            newUser.setModerator(originalUser.isModerator());
+            newUser.setActive(true);
             newUser.setSession(savedSession);
             userRepository.save(newUser);
         }

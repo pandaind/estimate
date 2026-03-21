@@ -15,6 +15,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import java.util.List;
 
 @Slf4j
@@ -56,6 +59,14 @@ public class StoryServiceImpl implements IStoryService {
             return storyRepository.findBySessionAndStatusOrderByOrderIndex(session, status);
         }
         return storyRepository.findBySessionOrderByOrderIndex(session);
+    }
+
+    public Page<Story> getStoriesPage(String sessionCode, StoryStatus status, Pageable pageable) {
+        Session session = sessionService.getSession(sessionCode);
+        if (status != null) {
+            return storyRepository.findBySessionAndStatusOrderByOrderIndex(session, status, pageable);
+        }
+        return storyRepository.findBySessionOrderByOrderIndex(session, pageable);
     }
 
     public Story getStory(String sessionCode, Long storyId) {

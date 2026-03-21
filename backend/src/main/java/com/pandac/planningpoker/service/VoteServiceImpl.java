@@ -40,6 +40,7 @@ public class VoteServiceImpl implements IVoteService {
     private final WebSocketEventPublisher webSocketEventPublisher;
     private final SessionAccessValidator sessionAccessValidator;
     private final VoteStatisticsCalculator voteStatisticsCalculator;
+    private final VoteResponseMapper voteResponseMapper;
 
     public Vote castVote(String sessionCode, Long storyId, Long userId, VoteRequest request) {
         Session session = sessionService.getSession(sessionCode);
@@ -54,11 +55,11 @@ public class VoteServiceImpl implements IVoteService {
 
         sessionAccessValidator.requireUserBelongsToSession(user, session);
 
-        if (user.getIsObserver()) {
+        if (user.isObserver()) {
             throw new InvalidVoteException("Observers cannot vote");
         }
 
-        if (!user.getIsActive()) {
+        if (!user.isActive()) {
             throw new InvalidVoteException("Inactive users cannot vote");
         }
 
@@ -66,7 +67,7 @@ public class VoteServiceImpl implements IVoteService {
         Vote vote;
 
         if (existingVote.isPresent()) {
-            if (!session.getSettings().getAllowChangeVote() && session.getVotesRevealed()) {
+            if (!session.getSettings().getAllowChangeVote() && session.isVotesRevealed()) {
                 throw new InvalidVoteException("Vote changes are not allowed after reveal");
             }
             vote = existingVote.get();
@@ -87,8 +88,8 @@ public class VoteServiceImpl implements IVoteService {
         webSocketEventPublisher.voteCast(sessionCode, storyId, voteCount);
 
         // Check for auto-reveal
-        if (session.getSettings().getAutoReveal() && !session.getVotesRevealed()) {
-            List<User> activeUsers = userRepository.findBySessionAndIsActiveAndIsObserver(session, true, false);
+        if (session.getSettings().getAutoReveal() && !session.isVotesRevealed()) {
+            List<User> activeUsers = userRepository.findBySessionAndActiveAndObserver(session, true, false);
             List<Vote> currentVotes = voteRepository.findByStory(story);
 
             if (currentVotes.size() >= activeUsers.size()) {
@@ -109,13 +110,13 @@ public class VoteServiceImpl implements IVoteService {
 
         sessionAccessValidator.requireStoryBelongsToSession(story, session);
 
-        if (revealed && !session.getVotesRevealed()) {
+        if (revealed && !session.isVotesRevealed()) {
             return new ArrayList<>();
         }
 
         List<Vote> votes = voteRepository.findByStory(story);
         return votes.stream()
-                .map(this::convertToVoteResponse)
+                .map(voteResponseMapper::toVoteResponse)
                 .collect(Collectors.toList());
     }
 
@@ -135,22 +136,4 @@ public class VoteServiceImpl implements IVoteService {
         vote.ifPresent(voteRepository::delete);
     }
 
-    private VoteResponse convertToVoteResponse(Vote vote) {
-        VoteResponse response = new VoteResponse();
-        response.setId(vote.getId());
-        response.setEstimate(vote.getEstimate());
-        response.setConfidence(vote.getConfidence());
-        response.setVotedAt(vote.getVotedAt());
-
-        User user = vote.getUser();
-        VoteResponse.UserInfo userInfo = new VoteResponse.UserInfo();
-        userInfo.setId(user.getId());
-        userInfo.setName(user.getName());
-        userInfo.setAvatar(user.getAvatar());
-        userInfo.setIsModerator(user.getIsModerator());
-        userInfo.setIsObserver(user.getIsObserver());
-
-        response.setUser(userInfo);
-        return response;
-    }
 }

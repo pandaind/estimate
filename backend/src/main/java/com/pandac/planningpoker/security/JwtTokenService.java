@@ -22,6 +22,15 @@ public class JwtTokenService {
     @Value("${jwt.expiration}")
     private long expiration;
 
+    /** Default Spring-managed constructor. */
+    public JwtTokenService() {}
+
+    /** Test-only constructor — allows instantiation with explicit values without Spring context. */
+    JwtTokenService(String secret, long expiration) {
+        this.secret = secret;
+        this.expiration = expiration;
+    }
+
     private SecretKey getSigningKey() {
         return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }

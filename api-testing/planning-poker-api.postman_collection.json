@@ -109,7 +109,7 @@
                   "    pm.expect(jsonData.status).to.eql('UP');",
                   "});",
                   "",
-                  "console.log('\u2705 TC-001 PASSED: Health check successful');"
+                  "console.log('✅ TC-001 PASSED: Health check successful');"
                 ],
                 "type": "text/javascript"
               }
@@ -148,7 +148,7 @@
                   "    pm.expect(jsonData).to.include.members(['FIBONACCI', 'T_SHIRT', 'POWERS_OF_2', 'LINEAR', 'CUSTOM']);",
                   "});",
                   "",
-                  "console.log('\u2705 TC-002 PASSED: All sizing methods retrieved');"
+                  "console.log('✅ TC-002 PASSED: All sizing methods retrieved');"
                 ],
                 "type": "text/javascript"
               }
@@ -201,7 +201,7 @@
                   "    pm.environment.set('authToken', jsonData.token);",
                   "});",
                   "",
-                  "console.log('\u2705 TC-003 PASSED: Session created - Code:', pm.environment.get('sessionCode'));"
+                  "console.log('✅ TC-003 PASSED: Session created - Code:', pm.environment.get('sessionCode'));"
                 ],
                 "type": "text/javascript"
               }
@@ -217,7 +217,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Sprint 24 Planning\",\n  \"description\": \"Planning session for Sprint 24\",\n  \"sizingMethod\": \"FIBONACCI\",\n  \"moderatorName\": \"John Doe\",\n  \"moderatorAvatar\": \"\ud83d\udc68\u200d\ud83d\udcbc\",\n  \"moderatorCanVote\": false\n}"
+              "raw": "{\n  \"name\": \"Sprint 24 Planning\",\n  \"description\": \"Planning session for Sprint 24\",\n  \"sizingMethod\": \"FIBONACCI\",\n  \"moderatorName\": \"John Doe\",\n  \"moderatorAvatar\": \"👨‍💼\",\n  \"moderatorCanVote\": false\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/sessions",
@@ -242,10 +242,11 @@
                   "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
                   "});",
                   "",
-                  "// Save session code immediately \u2014 before any assertions that could throw",
+                  "// Save session code immediately — before any assertions that could throw",
                   "const resp4 = pm.response.json();",
                   "if (resp4.session) {",
                   "    pm.environment.set('sessionCode2', resp4.session.sessionCode);",
+                  "    pm.environment.set('authToken2', resp4.token);",
                   "}",
                   "",
                   "pm.test('Session created with custom settings', function () {",
@@ -258,7 +259,7 @@
                   "    pm.expect(jsonData.session.moderatorCanVote).to.eql(true);",
                   "});",
                   "",
-                  "console.log('\u2705 TC-004 PASSED: Custom session created');"
+                  "console.log('✅ TC-004 PASSED: Custom session created');"
                 ],
                 "type": "text/javascript"
               }
@@ -274,7 +275,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Advanced Planning Session\",\n  \"description\": \"Testing custom settings\",\n  \"sizingMethod\": \"CUSTOM\",\n  \"customValues\": [\"XS\", \"S\", \"M\", \"L\", \"XL\", \"XXL\"],\n  \"moderatorName\": \"Jane Smith\",\n  \"moderatorAvatar\": \"\ud83d\udc69\u200d\ud83d\udcbb\",\n  \"moderatorCanVote\": true,\n  \"settings\": {\n    \"autoReveal\": true,\n    \"timerEnabled\": true,\n    \"timerDuration\": 300,\n    \"allowChangeVote\": false,\n    \"allowObservers\": true,\n    \"requireConfidence\": true\n  }\n}"
+              "raw": "{\n  \"name\": \"Advanced Planning Session\",\n  \"description\": \"Testing custom settings\",\n  \"sizingMethod\": \"CUSTOM\",\n  \"customValues\": [\"XS\", \"S\", \"M\", \"L\", \"XL\", \"XXL\"],\n  \"moderatorName\": \"Jane Smith\",\n  \"moderatorAvatar\": \"👩‍💻\",\n  \"moderatorCanVote\": true,\n  \"settings\": {\n    \"autoReveal\": true,\n    \"timerEnabled\": true,\n    \"timerDuration\": 300,\n    \"allowChangeVote\": false,\n    \"allowObservers\": true,\n    \"requireConfidence\": true\n  }\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/sessions",
@@ -304,7 +305,7 @@
                   "    pm.expect(jsonData.moderatorCanVote).to.eql(true);",
                   "});",
                   "",
-                  "console.log('\u2705 TC-042 PASSED: moderatorCanVote=true confirmed on custom session');"
+                  "console.log('✅ TC-042 PASSED: moderatorCanVote=true confirmed on custom session');"
                 ],
                 "type": "text/javascript"
               }
@@ -344,7 +345,7 @@
                   "    pm.expect(jsonData.sizingMethod).to.eql('FIBONACCI');",
                   "});",
                   "",
-                  "console.log('\u2705 TC-005 PASSED: Session retrieved successfully');"
+                  "console.log('✅ TC-005 PASSED: Session retrieved successfully');"
                 ],
                 "type": "text/javascript"
               }
@@ -384,7 +385,7 @@
                   "    pm.expect(jsonData.settings.autoReveal).to.eql(true);",
                   "});",
                   "",
-                  "console.log('\u2705 TC-006 PASSED: Session updated');"
+                  "console.log('✅ TC-006 PASSED: Session updated');"
                 ],
                 "type": "text/javascript"
               }
@@ -396,6 +397,11 @@
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
               }
             ],
             "body": {
@@ -435,7 +441,7 @@
                   "    pm.expect(jsonData.status).to.eql(404);",
                   "});",
                   "",
-                  "console.log('\u2705 TC-007 PASSED: 404 error handled correctly');"
+                  "console.log('✅ TC-007 PASSED: 404 error handled correctly');"
                 ],
                 "type": "text/javascript"
               }
@@ -482,14 +488,14 @@
                   "    // Save user ID",
                   "    pm.environment.set('aliceUserId', jsonData.userId);",
                   "    ",
-                  "    // Save Alice's participant token separately \u2014 moderator token stays in authToken",
+                  "    // Save Alice's participant token separately — moderator token stays in authToken",
                   "    if (jsonData.token) {",
                   "        pm.environment.set('aliceToken', jsonData.token);",
-                  "        console.log('\ud83d\udd11 Alice participant token stored');",
+                  "        console.log('🔑 Alice participant token stored');",
                   "    }",
                   "});",
                   "",
-                  "console.log('\u2705 TC-008 PASSED: Alice joined as participant');"
+                  "console.log('✅ TC-008 PASSED: Alice joined as participant');"
                 ],
                 "type": "text/javascript"
               }
@@ -505,7 +511,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Alice Developer\",\n  \"avatar\": \"\ud83d\udc69\u200d\ud83d\udcbb\",\n  \"isObserver\": false\n}"
+              "raw": "{\n  \"name\": \"Alice Developer\",\n  \"avatar\": \"👩‍💻\",\n  \"isObserver\": false\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/sessions/{{sessionCode}}/join",
@@ -541,7 +547,7 @@
                   "    pm.environment.set('observerId', jsonData.userId);",
                   "});",
                   "",
-                  "console.log('\u2705 TC-009 PASSED: Bob joined as observer');"
+                  "console.log('✅ TC-009 PASSED: Bob joined as observer');"
                 ],
                 "type": "text/javascript"
               }
@@ -557,7 +563,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Bob Observer\",\n  \"avatar\": \"\ud83d\udc40\",\n  \"isObserver\": true\n}"
+              "raw": "{\n  \"name\": \"Bob Observer\",\n  \"avatar\": \"👀\",\n  \"isObserver\": true\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/sessions/{{sessionCode}}/join",
@@ -590,7 +596,7 @@
                   "    pm.expect(jsonData.userId).to.eql(parseInt(existingUserId));",
                   "});",
                   "",
-                  "console.log('\u2705 TC-010 PASSED: User rejoined without duplication');"
+                  "console.log('✅ TC-010 PASSED: User rejoined without duplication');"
                 ],
                 "type": "text/javascript"
               }
@@ -606,7 +612,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Alice Developer\",\n  \"avatar\": \"\ud83d\udc69\u200d\ud83d\udcbb\",\n  \"isObserver\": false\n}"
+              "raw": "{\n  \"name\": \"Alice Developer\",\n  \"avatar\": \"👩‍💻\",\n  \"isObserver\": false\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/sessions/{{sessionCode}}/join",
@@ -639,7 +645,7 @@
                   "    pm.expect(jsonData.length).to.be.at.least(2); // Moderator + Alice + Bob",
                   "});",
                   "",
-                  "console.log('\u2705 TC-011 PASSED: Active users retrieved');"
+                  "console.log('✅ TC-011 PASSED: Active users retrieved');"
                 ],
                 "type": "text/javascript"
               }
@@ -647,7 +653,13 @@
           ],
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{baseUrl}}/api/sessions/{{sessionCode}}/users?activeOnly=true",
               "host": [
@@ -682,10 +694,10 @@
                   "pm.test('User profile updated', function () {",
                   "    const jsonData = pm.response.json();",
                   "    pm.expect(jsonData.name).to.eql('Alice Updated');",
-                  "    pm.expect(jsonData.avatar).to.eql('\ud83d\ude80');",
+                  "    pm.expect(jsonData.avatar).to.eql('🚀');",
                   "});",
                   "",
-                  "console.log('\u2705 TC-012 PASSED: User profile updated');"
+                  "console.log('✅ TC-012 PASSED: User profile updated');"
                 ],
                 "type": "text/javascript"
               }
@@ -697,11 +709,16 @@
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
               }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Alice Updated\",\n  \"avatar\": \"\ud83d\ude80\"\n}"
+              "raw": "{\n  \"name\": \"Alice Updated\",\n  \"avatar\": \"🚀\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/sessions/{{sessionCode}}/users/{{aliceUserId}}",
@@ -729,7 +746,7 @@
                   "    pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
                   "});",
                   "",
-                  "console.log('\u2705 TC-013 PASSED: User left session');"
+                  "console.log('✅ TC-013 PASSED: User left session');"
                 ],
                 "type": "text/javascript"
               }
@@ -737,7 +754,13 @@
           ],
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{baseUrl}}/api/sessions/{{sessionCode}}/users/{{observerId}}/leave",
               "host": [
@@ -780,7 +803,7 @@
                   "    pm.environment.set('story1Id', jsonData.id);",
                   "});",
                   "",
-                  "console.log('\u2705 TC-014 PASSED: Story 1 created');"
+                  "console.log('✅ TC-014 PASSED: Story 1 created');"
                 ],
                 "type": "text/javascript"
               }
@@ -792,6 +815,11 @@
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
               }
             ],
             "body": {
@@ -832,7 +860,7 @@
                   "    pm.environment.set('story2Id', jsonData.id);",
                   "});",
                   "",
-                  "console.log('\u2705 TC-015 PASSED: Story 2 created with tags');"
+                  "console.log('✅ TC-015 PASSED: Story 2 created with tags');"
                 ],
                 "type": "text/javascript"
               }
@@ -844,6 +872,11 @@
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
               }
             ],
             "body": {
@@ -886,7 +919,7 @@
                   "    }",
                   "});",
                   "",
-                  "console.log('\u2705 TC-016 PASSED: All stories retrieved in order');"
+                  "console.log('✅ TC-016 PASSED: All stories retrieved in order');"
                 ],
                 "type": "text/javascript"
               }
@@ -894,7 +927,13 @@
           ],
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{baseUrl}}/api/sessions/{{sessionCode}}/stories",
               "host": [
@@ -928,7 +967,7 @@
                   "    });",
                   "});",
                   "",
-                  "console.log('\u2705 TC-017 PASSED: Story filtering works');"
+                  "console.log('✅ TC-017 PASSED: Story filtering works');"
                 ],
                 "type": "text/javascript"
               }
@@ -936,7 +975,13 @@
           ],
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{baseUrl}}/api/sessions/{{sessionCode}}/stories?status=NOT_ESTIMATED",
               "host": [
@@ -973,7 +1018,7 @@
                   "    pm.expect(jsonData.title).to.eql('User Authentication Module');",
                   "});",
                   "",
-                  "console.log('\u2705 TC-018 PASSED: Single story retrieved');"
+                  "console.log('✅ TC-018 PASSED: Single story retrieved');"
                 ],
                 "type": "text/javascript"
               }
@@ -981,7 +1026,13 @@
           ],
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{baseUrl}}/api/sessions/{{sessionCode}}/stories/{{story1Id}}",
               "host": [
@@ -1014,7 +1065,7 @@
                   "    pm.expect(jsonData.priority).to.eql('CRITICAL');",
                   "});",
                   "",
-                  "console.log('\u2705 TC-019 PASSED: Story updated');"
+                  "console.log('✅ TC-019 PASSED: Story updated');"
                 ],
                 "type": "text/javascript"
               }
@@ -1026,6 +1077,11 @@
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
               }
             ],
             "body": {
@@ -1065,7 +1121,7 @@
                   "    pm.expect(jsonData.votesRevealed).to.eql(false);",
                   "});",
                   "",
-                  "console.log('\u2705 TC-020 PASSED: Current story set for voting');"
+                  "console.log('✅ TC-020 PASSED: Current story set for voting');"
                 ],
                 "type": "text/javascript"
               }
@@ -1073,7 +1129,13 @@
           ],
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{baseUrl}}/api/sessions/{{sessionCode}}/current-story?storyId={{story1Id}}",
               "host": [
@@ -1126,7 +1188,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Alice Developer\",\n  \"avatar\": \"\ud83d\udc69\u200d\ud83d\udcbb\",\n  \"isObserver\": false\n}"
+              "raw": "{\n  \"name\": \"Alice Developer\",\n  \"avatar\": \"👩‍💻\",\n  \"isObserver\": false\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/sessions/{{sessionCode}}/join",
@@ -1159,7 +1221,7 @@
                   "    pm.expect(jsonData.moderatorCanVote).to.eql(false);",
                   "});",
                   "",
-                  "console.log('\u2705 TC-021 PASSED: moderatorCanVote=false confirmed on basic session');"
+                  "console.log('✅ TC-021 PASSED: moderatorCanVote=false confirmed on basic session');"
                 ],
                 "type": "text/javascript"
               }
@@ -1198,7 +1260,7 @@
                   "    pm.expect(jsonData.confidence).to.eql(4);",
                   "});",
                   "",
-                  "console.log('\u2705 TC-022 PASSED: Vote cast by Alice');"
+                  "console.log('✅ TC-022 PASSED: Vote cast by Alice');"
                 ],
                 "type": "text/javascript"
               }
@@ -1210,6 +1272,11 @@
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
               }
             ],
             "body": {
@@ -1248,7 +1315,7 @@
                   "    pm.expect(jsonData.estimate).to.eql('8');",
                   "});",
                   "",
-                  "console.log('\u2705 TC-043 PASSED: Duplicate vote overrides previous estimate');"
+                  "console.log('✅ TC-043 PASSED: Duplicate vote overrides previous estimate');"
                 ],
                 "type": "text/javascript"
               }
@@ -1260,6 +1327,11 @@
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
               }
             ],
             "body": {
@@ -1306,7 +1378,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Bob Developer\",\n  \"avatar\": \"\ud83d\udc68\u200d\ud83d\udcbb\",\n  \"isObserver\": false\n}"
+              "raw": "{\n  \"name\": \"Bob Developer\",\n  \"avatar\": \"👨‍💻\",\n  \"isObserver\": false\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/sessions/{{sessionCode}}/join",
@@ -1335,7 +1407,7 @@
                   "    pm.expect(jsonData.estimate).to.eql('8');",
                   "});",
                   "",
-                  "console.log('\u2705 TC-023 PASSED: Multiple votes recorded');"
+                  "console.log('✅ TC-023 PASSED: Multiple votes recorded');"
                 ],
                 "type": "text/javascript"
               }
@@ -1347,6 +1419,11 @@
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
               }
             ],
             "body": {
@@ -1398,7 +1475,7 @@
                   "    });",
                   "});",
                   "",
-                  "console.log('\u2705 TC-044 PASSED: Vote count correct without reveal (' + pm.response.json().length + ' votes)');"
+                  "console.log('✅ TC-044 PASSED: Vote count correct without reveal (' + pm.response.json().length + ' votes)');"
                 ],
                 "type": "text/javascript"
               }
@@ -1406,7 +1483,13 @@
           ],
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{baseUrl}}/api/sessions/{{sessionCode}}/stories/{{story1Id}}/votes",
               "host": [
@@ -1439,7 +1522,7 @@
                   "    pm.expect(jsonData.message).to.include('Observer');",
                   "});",
                   "",
-                  "console.log('\u2705 TC-024 PASSED: Observer voting blocked');"
+                  "console.log('✅ TC-024 PASSED: Observer voting blocked');"
                 ],
                 "type": "text/javascript"
               }
@@ -1451,6 +1534,11 @@
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
               }
             ],
             "body": {
@@ -1490,7 +1578,7 @@
                   "    pm.expect(jsonData).to.have.lengthOf(0);",
                   "});",
                   "",
-                  "console.log('\u2705 TC-025 PASSED: Votes hidden');"
+                  "console.log('✅ TC-025 PASSED: Votes hidden');"
                 ],
                 "type": "text/javascript"
               }
@@ -1498,7 +1586,13 @@
           ],
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{baseUrl}}/api/sessions/{{sessionCode}}/stories/{{story1Id}}/votes?revealed=true",
               "host": [
@@ -1537,11 +1631,11 @@
                   "    pm.expect(jsonData).to.have.property('votes');",
                   "    pm.expect(jsonData).to.have.property('consensus');",
                   "    pm.expect(jsonData).to.have.property('distribution');",
-                  "    pm.expect(jsonData.consensus).to.eql(true); // Alice=8, Bob=8 \u2192 consensus",
+                  "    pm.expect(jsonData.consensus).to.eql(true); // Alice=8, Bob=8 → consensus",
                   "    pm.expect(jsonData.distribution).to.have.property('8');",
                   "});",
                   "",
-                  "console.log('\u2705 TC-026 PASSED: Votes revealed with statistics');"
+                  "console.log('✅ TC-026 PASSED: Votes revealed with statistics');"
                 ],
                 "type": "text/javascript"
               }
@@ -1549,7 +1643,13 @@
           ],
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{baseUrl}}/api/sessions/{{sessionCode}}/reveal",
               "host": [
@@ -1581,7 +1681,7 @@
                   "    pm.expect(jsonData.length).to.be.at.least(2);",
                   "});",
                   "",
-                  "console.log('\u2705 TC-027 PASSED: Votes visible after reveal');"
+                  "console.log('✅ TC-027 PASSED: Votes visible after reveal');"
                 ],
                 "type": "text/javascript"
               }
@@ -1589,7 +1689,13 @@
           ],
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{baseUrl}}/api/sessions/{{sessionCode}}/stories/{{story1Id}}/votes",
               "host": [
@@ -1625,7 +1731,7 @@
                   "    pm.expect(jsonData).to.have.property('statistics');",
                   "});",
                   "",
-                  "console.log('\u2705 TC-028 PASSED: Story analytics retrieved');"
+                  "console.log('✅ TC-028 PASSED: Story analytics retrieved');"
                 ],
                 "type": "text/javascript"
               }
@@ -1633,7 +1739,13 @@
           ],
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{baseUrl}}/api/sessions/{{sessionCode}}/stories/{{story1Id}}/analytics",
               "host": [
@@ -1669,7 +1781,7 @@
                   "    pm.expect(jsonData.participantCount).to.be.at.least(2);",
                   "});",
                   "",
-                  "console.log('\u2705 TC-029 PASSED: Session analytics retrieved');"
+                  "console.log('✅ TC-029 PASSED: Session analytics retrieved');"
                 ],
                 "type": "text/javascript"
               }
@@ -1677,7 +1789,13 @@
           ],
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{baseUrl}}/api/sessions/{{sessionCode}}/analytics",
               "host": [
@@ -1711,7 +1829,7 @@
                   "    pm.expect(jsonData).to.have.property('isObserver');",
                   "});",
                   "",
-                  "console.log('\u2705 TC-030 PASSED: User details retrieved');"
+                  "console.log('✅ TC-030 PASSED: User details retrieved');"
                 ],
                 "type": "text/javascript"
               }
@@ -1719,7 +1837,13 @@
           ],
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{baseUrl}}/api/sessions/{{sessionCode}}/users/{{aliceUserId}}",
               "host": [
@@ -1753,7 +1877,7 @@
                   "    pm.expect(jsonData.estimateNotes).to.include('discussion');",
                   "});",
                   "",
-                  "console.log('\u2705 TC-031 PASSED: Estimate finalized');"
+                  "console.log('✅ TC-031 PASSED: Estimate finalized');"
                 ],
                 "type": "text/javascript"
               }
@@ -1765,6 +1889,11 @@
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
               }
             ],
             "body": {
@@ -1805,7 +1934,7 @@
                   "    pm.expect(jsonData).to.have.property('title');",
                   "});",
                   "",
-                  "console.log('\u2705 TC-031b PASSED: Story reset for revoting');"
+                  "console.log('✅ TC-031b PASSED: Story reset for revoting');"
                 ],
                 "type": "text/javascript"
               }
@@ -1813,7 +1942,13 @@
           ],
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{baseUrl}}/api/sessions/{{sessionCode}}/stories/{{story1Id}}/reset",
               "host": [
@@ -1841,7 +1976,7 @@
                   "    pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
                   "});",
                   "",
-                  "console.log('\u2705 TC-032 PASSED: Votes reset');"
+                  "console.log('✅ TC-032 PASSED: Votes reset');"
                 ],
                 "type": "text/javascript"
               }
@@ -1849,7 +1984,13 @@
           ],
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{baseUrl}}/api/sessions/{{sessionCode}}/reset-votes",
               "host": [
@@ -1875,7 +2016,7 @@
                   "    pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
                   "});",
                   "",
-                  "console.log('\u2705 TC-033 PASSED: Vote deleted');"
+                  "console.log('✅ TC-033 PASSED: Vote deleted');"
                 ],
                 "type": "text/javascript"
               }
@@ -1883,7 +2024,13 @@
           ],
           "request": {
             "method": "DELETE",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{baseUrl}}/api/sessions/{{sessionCode}}/stories/{{story2Id}}/votes/{{aliceUserId}}",
               "host": [
@@ -1919,7 +2066,7 @@
                   "    pm.expect(jsonData.estimate).to.eql('?');",
                   "});",
                   "",
-                  "console.log('\u2705 TC-034 PASSED: Special votes handled');"
+                  "console.log('✅ TC-034 PASSED: Special votes handled');"
                 ],
                 "type": "text/javascript"
               }
@@ -1931,6 +2078,11 @@
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
               }
             ],
             "body": {
@@ -1975,7 +2127,7 @@
                   "    pm.expect(pm.response.code).to.be.oneOf([401, 403]);",
                   "});",
                   "",
-                  "console.log('\u2705 TC-040 PASSED: Unauthenticated request blocked (' + pm.response.code + ')');"
+                  "console.log('✅ TC-040 PASSED: Unauthenticated request blocked (' + pm.response.code + ')');"
                 ],
                 "type": "text/javascript"
               }
@@ -2033,7 +2185,7 @@
                   "    pm.response.to.have.status(403);",
                   "});",
                   "",
-                  "console.log('\u2705 TC-041 PASSED: Participant blocked from moderator action (403)');"
+                  "console.log('✅ TC-041 PASSED: Participant blocked from moderator action (403)');"
                 ],
                 "type": "text/javascript"
               }
@@ -2045,6 +2197,11 @@
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{aliceToken}}",
+                "type": "text"
               }
             ],
             "body": {
@@ -2076,7 +2233,7 @@
                   "    pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
                   "});",
                   "",
-                  "console.log('\u2705 TC-035 PASSED: Story deleted');"
+                  "console.log('✅ TC-035 PASSED: Story deleted');"
                 ],
                 "type": "text/javascript"
               }
@@ -2084,7 +2241,13 @@
           ],
           "request": {
             "method": "DELETE",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{baseUrl}}/api/sessions/{{sessionCode}}/stories/{{story2Id}}",
               "host": [
@@ -2111,7 +2274,7 @@
                   "    pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
                   "});",
                   "",
-                  "console.log('\u2705 TC-036 PASSED: Session soft deleted');"
+                  "console.log('✅ TC-036 PASSED: Session soft deleted');"
                 ],
                 "type": "text/javascript"
               }
@@ -2119,7 +2282,13 @@
           ],
           "request": {
             "method": "DELETE",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{baseUrl}}/api/sessions/{{sessionCode2}}",
               "host": [
@@ -2161,7 +2330,7 @@
                   "    pm.environment.set('exportedSessionData', JSON.stringify(jsonData));",
                   "});",
                   "",
-                  "console.log('\u2705 TC-037 PASSED: Session exported as JSON');"
+                  "console.log('✅ TC-037 PASSED: Session exported as JSON');"
                 ],
                 "type": "text/javascript"
               }
@@ -2169,7 +2338,13 @@
           ],
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{baseUrl}}/api/sessions/{{sessionCode}}/export?format=json",
               "host": [
@@ -2206,7 +2381,7 @@
                   "    pm.expect(contentType).to.include('text/csv');",
                   "});",
                   "",
-                  "console.log('\u2705 TC-038 PASSED: Session exported as CSV');"
+                  "console.log('✅ TC-038 PASSED: Session exported as CSV');"
                 ],
                 "type": "text/javascript"
               }
@@ -2214,7 +2389,13 @@
           ],
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
             "url": {
               "raw": "{{baseUrl}}/api/sessions/{{sessionCode}}/export?format=csv",
               "host": [
@@ -2256,7 +2437,7 @@
                   "    pm.environment.set('importedSessionCode', jsonData.sessionCode);",
                   "});",
                   "",
-                  "console.log('\u2705 TC-039 PASSED: Session imported');"
+                  "console.log('✅ TC-039 PASSED: Session imported');"
                 ],
                 "type": "text/javascript"
               }
@@ -2268,6 +2449,11 @@
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
               }
             ],
             "body": {

@@ -19,23 +19,27 @@ if [ ! -d "node_modules" ]; then
     echo ""
 fi
 
-# Check if frontend is running
+# Check if frontend is running (Node.js http — works on any OS with Node)
 echo "🔍 Checking if frontend is running on http://localhost:5173..."
-if curl -s http://localhost:5173 > /dev/null; then
+if node -e "require('http').get('http://localhost:5173',r=>{process.exit(0)}).on('error',()=>process.exit(1))" 2>/dev/null; then
     echo "✅ Frontend is running"
 else
     echo "⚠️  Warning: Frontend doesn't appear to be running on http://localhost:5173"
-    echo "   Please start the frontend with: cd ../frontend && npm run dev"
+    echo "   Playwright will attempt to auto-start it via webServer config."
+    echo "   To start manually: cd ../frontend && npm run dev"
     echo ""
 fi
 
-# Check if backend is running
+# Check if backend is running (Node.js http — works on any OS with Node)
 echo "🔍 Checking if backend is running on http://localhost:8080..."
-if curl -s http://localhost:8080/actuator/health > /dev/null 2>&1; then
+if node -e "require('http').get('http://localhost:8080/api/health',r=>{process.exit(r.statusCode===200?0:1)}).on('error',()=>process.exit(1))" 2>/dev/null; then
     echo "✅ Backend is running"
 else
     echo "⚠️  Warning: Backend doesn't appear to be running on http://localhost:8080"
-    echo "   Please start the backend"
+    echo "   Please start the backend:"
+    echo "     cd ../backend"
+    echo "     export JWT_SECRET=my-dev-secret-replace-in-prod"
+    echo "     mvn spring-boot:run"
     echo ""
 fi
 

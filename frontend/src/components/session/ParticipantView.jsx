@@ -13,8 +13,8 @@ export default function ParticipantView({
 }) {
   if (!currentStory) {
     return (
-      <div className="text-center py-16">
-        <div className="text-6xl mb-4">⏳</div>
+      <div className="text-center py-8 sm:py-16">
+        <div className="text-5xl sm:text-6xl mb-4">⏳</div>
         <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
           Waiting for Host
         </h3>

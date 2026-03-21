@@ -17,7 +17,6 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
-import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -26,9 +25,15 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
-    
+
     @Value("${cors.allowed-origins:http://localhost:3000,http://localhost:5173}")
     private String allowedOrigins;
+
+    @Value("${spring.h2.console.enabled:false}")
+    private boolean h2ConsoleEnabled;
+
+    @Value("${springdoc.api-docs.enabled:true}")
+    private boolean swaggerEnabled;
     
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
@@ -61,10 +66,12 @@ public class SecurityConfig {
                 // WebSocket endpoint - public (secured via WebSocketAuthInterceptor)
                 .requestMatchers("/ws/**").permitAll()
                 
-                // Development tools - conditionally public
-                .requestMatchers("/h2-console/**").permitAll()
-                .requestMatchers("/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-                
+                // Development tools - gated by profile properties
+                .requestMatchers("/h2-console/**").access((supplier, ctx) ->
+                    new org.springframework.security.authorization.AuthorizationDecision(h2ConsoleEnabled))
+                .requestMatchers("/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").access((supplier, ctx) ->
+                    new org.springframework.security.authorization.AuthorizationDecision(swaggerEnabled))
+
                 // All other endpoints require authentication
                 .anyRequest().authenticated()
             )

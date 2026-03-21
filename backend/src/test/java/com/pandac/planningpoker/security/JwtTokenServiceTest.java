@@ -91,11 +91,17 @@ class JwtTokenServiceTest {
 
     @Test
     void testValidateExpiredToken() throws InterruptedException {
-        // Note: This test would require a very short expiration time
-        // For production, you'd want to mock the time or use a separate configuration
-        String token = jwtTokenService.generateToken(sessionCode, userId, role);
-        
-        // Token should be valid immediately
-        assertTrue(jwtTokenService.isTokenValid(token));
+        // Use a dedicated service instance configured with 1 ms expiration so the
+        // token expires before we assert. Avoids Thread.sleep in the main service.
+        JwtTokenService shortLived = new JwtTokenService(
+            "test-secret-key-for-jwt-token-generation-and-validation-12345",
+            1L
+        );
+        String token = shortLived.generateToken(sessionCode, userId, role);
+
+        // Give the token a moment to expire
+        Thread.sleep(10);
+
+        assertFalse(shortLived.isTokenValid(token), "Token should be invalid after expiration");
     }
 }

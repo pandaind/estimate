@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 @Data
 @NoArgsConstructor
@@ -13,7 +13,7 @@ public class VoteResponse {
     private Long id;
     private String estimate;
     private Integer confidence;
-    private LocalDateTime votedAt;
+    private OffsetDateTime votedAt;
     private UserInfo user;
     
     @Data

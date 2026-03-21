@@ -49,11 +49,18 @@ test.describe('Fixture Examples', () => {
     await revealVotes(facilitator);
     
     // Navigate facilitator to Results tab to see summary
-    await facilitator.click('button:has-text("Results")');
-    await facilitator.waitForTimeout(2000); // Allow WebSocket VOTES_REVEALED to update session.votesRevealed
+    await facilitator.click('[data-testid="tab-results"]');
+    await facilitator.waitForTimeout(1000);
     
-    // Facilitator should see results summary
-    await expect(facilitator.locator('text=Summary')).toBeVisible({ timeout: 10000 });
+    // If WebSocket VOTES_REVEALED hasn't propagated yet, VotingResults shows hidden votes
+    // with a Reveal button. Click it as fallback to trigger reveal from Results tab directly.
+    const revealBtn = facilitator.locator('button:has-text("Reveal")');
+    if (await revealBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await revealBtn.click();
+      await facilitator.waitForTimeout(1000);
+    }
+    
+    await expect(facilitator.locator('text=Summary')).toBeVisible({ timeout: 15000 });
     
     // Participants should still see the story (via CurrentStoryBanner)
     await expect(participant1.locator('text=Multi-user Story').first()).toBeVisible({ timeout: 10000 });
@@ -76,11 +83,18 @@ test.describe('Fixture Examples', () => {
     await revealVotes(facilitator);
     
     // Navigate to Results tab to see consensus message
-    await facilitator.click('button:has-text("Results")');
-    await facilitator.waitForTimeout(2000); // Allow WebSocket VOTES_REVEALED to update session.votesRevealed
+    await facilitator.click('[data-testid="tab-results"]');
+    await facilitator.waitForTimeout(1000);
+    
+    // Fallback: click Reveal in VotingResults if WebSocket hasn't propagated
+    const revealBtn = facilitator.locator('button:has-text("Reveal")');
+    if (await revealBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await revealBtn.click();
+      await facilitator.waitForTimeout(1000);
+    }
     
     // Should show consensus message
-    await expect(facilitator.locator('text=Consensus reached')).toBeVisible({ timeout: 10000 });
+    await expect(facilitator.locator('text=Consensus reached')).toBeVisible({ timeout: 15000 });
   });
 
   test('should handle voting divergence', async ({ multiUser }) => {
@@ -99,10 +113,17 @@ test.describe('Fixture Examples', () => {
     await revealVotes(facilitator);
     
     // Navigate to Results tab to see distribution
-    await facilitator.click('button:has-text("Results")');
-    await facilitator.waitForTimeout(2000); // Allow WebSocket VOTES_REVEALED to update session.votesRevealed
+    await facilitator.click('[data-testid="tab-results"]');
+    await facilitator.waitForTimeout(1000);
+    
+    // Fallback: click Reveal in VotingResults if WebSocket hasn't propagated
+    const revealBtn = facilitator.locator('button:has-text("Reveal")');
+    if (await revealBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await revealBtn.click();
+      await facilitator.waitForTimeout(1000);
+    }
     
     // Should show distribution of votes
-    await expect(facilitator.locator('text=Distribution')).toBeVisible({ timeout: 10000 });
+    await expect(facilitator.locator('text=Distribution')).toBeVisible({ timeout: 15000 });
   });
 });

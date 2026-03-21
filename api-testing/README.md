@@ -1,12 +1,19 @@
 # API Tests
 
-Newman/Postman test suite with 39 test cases.
+Newman/Postman test suite with 83 assertions across 47 requests.
 
 ## Run Tests
 
-**Prerequisite:** Backend running on http://localhost:8080
+**Prerequisites:**
+1. Backend running on http://localhost:8080
+2. `JWT_SECRET` environment variable set when starting the backend
 
 ```bash
+# Start the backend first (in backend/ directory):
+export JWT_SECRET=$(openssl rand -base64 64)
+mvn spring-boot:run
+
+# Then run tests:
 npm test
 ```
 
@@ -15,6 +22,17 @@ Or using Newman directly:
 ```bash
 newman run planning-poker-api.postman_collection.json -e environment.json
 ```
+
+## Authentication
+
+The backend requires JWT authentication. The collection handles this automatically:
+
+- **TC-003** creates a session and saves the moderator JWT token as `authToken`
+- **TC-004** creates a second session and saves its moderator JWT as `authToken2`
+- **TC-008** saves Alice's participant token as `aliceToken`
+- All protected endpoints use `Authorization: Bearer {{authToken}}` automatically
+- **TC-041** uses `{{aliceToken}}` to verify participants can't perform moderator actions
+- **TC-040** intentionally sends no token to verify 401/403 is returned
 
 ## Test Coverage
 

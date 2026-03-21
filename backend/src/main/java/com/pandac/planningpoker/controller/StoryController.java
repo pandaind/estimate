@@ -8,6 +8,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -34,10 +36,16 @@ public class StoryController {
     }
 
     @GetMapping
-    @Operation(summary = "List all stories", description = "Get all stories in the session backlog")
-    public ResponseEntity<List<Story>> getStories(
+    @Operation(summary = "List all stories", description = "Get all stories in the session backlog. Use page/size for pagination.")
+    public ResponseEntity<?> getStories(
             @PathVariable String sessionCode,
-            @RequestParam(required = false) StoryStatus status) {
+            @RequestParam(required = false) StoryStatus status,
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer size) {
+        if (page != null && size != null) {
+            Page<Story> stories = storyService.getStoriesPage(sessionCode, status, PageRequest.of(page, size));
+            return ResponseEntity.ok(stories);
+        }
         List<Story> stories = storyService.getStories(sessionCode, status);
         return ResponseEntity.ok(stories);
     }

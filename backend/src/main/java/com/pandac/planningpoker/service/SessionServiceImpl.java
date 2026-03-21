@@ -14,6 +14,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.springframework.dao.DataIntegrityViolationException;
+
 import java.security.SecureRandom;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -32,14 +34,43 @@ public class SessionServiceImpl implements ISessionService {
     private final JwtTokenService jwtTokenService;
     private final SessionAccessValidator sessionAccessValidator;
     private final VoteStatisticsCalculator voteStatisticsCalculator;
+    private final VoteResponseMapper voteResponseMapper;
 
     private static final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     private static final int CODE_LENGTH = 6;
+    private static final int MAX_CODE_RETRIES = 5;
     private final SecureRandom random = new SecureRandom();
 
     // ── Session CRUD ───────────────────────────────────────────────────────────
 
     public CreateSessionResponse createSession(CreateSessionRequest request) {
+        Session session = createSessionWithUniqueCode(request);
+        return buildCreateSessionResponse(session, request);
+    }
+
+    /**
+     * Attempts to persist the session, retrying with a fresh code on
+     * duplicate-key collisions (TOCTOU race between generateUniqueSessionCode
+     * and the INSERT). The UNIQUE constraint on session_code is the real guard.
+     */
+    private Session createSessionWithUniqueCode(CreateSessionRequest request) {
+        for (int attempt = 0; attempt < MAX_CODE_RETRIES; attempt++) {
+            try {
+                Session session = buildSession(request);
+                return sessionRepository.save(session);
+            } catch (DataIntegrityViolationException e) {
+                if (attempt == MAX_CODE_RETRIES - 1) {
+                    throw new IllegalStateException(
+                            "Unable to generate a unique session code after " + MAX_CODE_RETRIES + " attempts", e);
+                }
+                log.warn("Session code collision on attempt {}, retrying", attempt + 1);
+            }
+        }
+        // Unreachable, but satisfies the compiler
+        throw new IllegalStateException("Failed to generate unique session code");
+    }
+
+    private Session buildSession(CreateSessionRequest request) {
         Session session = new Session();
         session.setSessionCode(generateUniqueSessionCode());
         session.setName(request.getName());
@@ -48,7 +79,23 @@ public class SessionServiceImpl implements ISessionService {
         session.setModeratorCanVote(request.getModeratorCanVote() != null ? request.getModeratorCanVote() : false);
 
         if (request.getCustomValues() != null && request.getCustomValues().length > 0) {
-            session.setCustomValues(Arrays.asList(request.getCustomValues()));
+            List<String> values = Arrays.stream(request.getCustomValues())
+                    .map(String::trim)
+                    .filter(v -> !v.isBlank())
+                    .distinct()
+                    .toList();
+            if (values.isEmpty()) {
+                throw new IllegalArgumentException("CUSTOM sizing requires at least one non-empty value");
+            }
+            if (values.stream().anyMatch(v -> v.length() > 10)) {
+                throw new IllegalArgumentException("Each custom sizing value must be 10 characters or fewer");
+            }
+            if (values.size() > 20) {
+                throw new IllegalArgumentException("CUSTOM sizing allows a maximum of 20 values");
+            }
+            session.setCustomValues(values);
+        } else if (request.getSizingMethod() == SizingMethod.CUSTOM) {
+            throw new IllegalArgumentException("CUSTOM sizing method requires at least one value");
         }
 
         if (request.getSettings() != null) {
@@ -61,14 +108,16 @@ public class SessionServiceImpl implements ISessionService {
             if (s.getRequireConfidence() != null) session.getSettings().setRequireConfidence(s.getRequireConfidence());
         }
 
-        session = sessionRepository.save(session);
+        return session;
+    }
 
+    private CreateSessionResponse buildCreateSessionResponse(Session session, CreateSessionRequest request) {
         User moderator = new User();
         moderator.setName(request.getModeratorName());
         moderator.setAvatar(request.getModeratorAvatar());
         moderator.setSession(session);
-        moderator.setIsModerator(true);
-        moderator.setIsObserver(false);
+        moderator.setModerator(true);
+        moderator.setObserver(false);
         moderator = userRepository.save(moderator);
 
         session.setModeratorId(moderator.getId());
@@ -85,7 +134,7 @@ public class SessionServiceImpl implements ISessionService {
     }
 
     public Session getSession(String sessionCode) {
-        return sessionRepository.findBySessionCodeAndIsActive(sessionCode, true)
+        return sessionRepository.findBySessionCodeAndActive(sessionCode, true)
                 .orElseThrow(() -> new SessionNotFoundException(sessionCode));
     }
 
@@ -122,14 +171,17 @@ public class SessionServiceImpl implements ISessionService {
 
     public void deleteSession(String sessionCode) {
         Session session = getSession(sessionCode);
-        session.setIsActive(false);
+        session.setActive(false);
+        // Cascade the soft-delete to all active child users and stories
+        session.getUsers().forEach(u -> u.setActive(false));
+        session.getStories().forEach(s -> s.setStatus(StoryStatus.NOT_ESTIMATED));
         sessionRepository.save(session);
     }
 
     // ── Participants ───────────────────────────────────────────────────────────
 
     public UserSession joinSession(String sessionCode, JoinSessionRequest request) {
-        Session session = sessionRepository.findBySessionCodeAndIsActive(sessionCode, true)
+        Session session = sessionRepository.findBySessionCodeAndActive(sessionCode, true)
                 .orElseThrow(() -> new SessionNotFoundException(sessionCode));
 
         Optional<User> existingUser = userRepository.findByNameAndSession(request.getName(), session);
@@ -137,8 +189,8 @@ public class SessionServiceImpl implements ISessionService {
 
         if (existingUser.isPresent()) {
             user = existingUser.get();
-            user.setIsActive(true);
-            user.setIsObserver(request.getIsObserver());
+            user.setActive(true);
+            user.setObserver(request.getIsObserver());
             if (request.getAvatar() != null) user.setAvatar(request.getAvatar());
             userRepository.save(user);
         } else {
@@ -146,13 +198,13 @@ public class SessionServiceImpl implements ISessionService {
             user.setName(request.getName());
             user.setAvatar(request.getAvatar());
             user.setSession(session);
-            user.setIsObserver(request.getIsObserver());
-            user.setIsModerator(false);
+            user.setObserver(request.getIsObserver());
+            user.setModerator(false);
             user = userRepository.save(user);
         }
 
-        UserRole role = user.getIsModerator() ? UserRole.MODERATOR
-                : (user.getIsObserver() ? UserRole.OBSERVER : UserRole.PARTICIPANT);
+        UserRole role = user.isModerator() ? UserRole.MODERATOR
+                : (user.isObserver() ? UserRole.OBSERVER : UserRole.PARTICIPANT);
         String token = jwtTokenService.generateToken(sessionCode, user.getId(), role);
 
         UserSession userSession = new UserSession();
@@ -170,7 +222,7 @@ public class SessionServiceImpl implements ISessionService {
         Session session = getSession(sessionCode);
         User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
         sessionAccessValidator.requireUserBelongsToSession(user, session);
-        user.setIsActive(false);
+        user.setActive(false);
         userRepository.save(user);
         webSocketEventPublisher.userLeft(sessionCode, user.getId(), user.getName());
     }
@@ -185,7 +237,7 @@ public class SessionServiceImpl implements ISessionService {
                 .orElseThrow(() -> new StoryNotFoundException(session.getCurrentStoryId()));
 
         List<Vote> votes = voteRepository.findByStory(story);
-        List<VoteResponse> voteResponses = votes.stream().map(this::toVoteResponse).collect(Collectors.toList());
+        List<VoteResponse> voteResponses = votes.stream().map(voteResponseMapper::toVoteResponse).collect(Collectors.toList());
 
         session.setVotesRevealed(true);
         sessionRepository.save(session);
@@ -236,24 +288,10 @@ public class SessionServiceImpl implements ISessionService {
 
     // ── Helpers ────────────────────────────────────────────────────────────────
 
-    private VoteResponse toVoteResponse(Vote vote) {
-        VoteResponse r = new VoteResponse();
-        r.setId(vote.getId());
-        r.setEstimate(vote.getEstimate());
-        r.setConfidence(vote.getConfidence());
-        r.setVotedAt(vote.getVotedAt());
-        User u = vote.getUser();
-        VoteResponse.UserInfo ui = new VoteResponse.UserInfo();
-        ui.setId(u.getId());
-        ui.setName(u.getName());
-        ui.setAvatar(u.getAvatar());
-        ui.setIsModerator(u.getIsModerator());
-        ui.setIsObserver(u.getIsObserver());
-        r.setUser(ui);
-        return r;
-    }
-
     private String generateUniqueSessionCode() {
+        // Generate a code and verify it doesn't exist. The UNIQUE constraint
+        // on session_code is the real safeguard against duplicates — this
+        // check just avoids unnecessary constraint violations.
         String code;
         do { code = generateSessionCode(); }
         while (sessionRepository.findBySessionCode(code).isPresent());

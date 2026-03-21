@@ -15,16 +15,19 @@ echo -e "${BLUE}║   EstiMate API - Newman Test Suite Runner              ║${
 echo -e "${BLUE}╚════════════════════════════════════════════════════════╝${NC}"
 echo ""
 
-# Check if backend is running
+# Check if backend is running (uses Node.js http — works on any OS with Node installed)
 echo -e "${YELLOW}[1/5]${NC} Checking if backend server is running..."
-if curl -s http://localhost:8080/api/health > /dev/null 2>&1; then
+if node -e "require('http').get('http://localhost:8080/api/health',r=>{process.exit(r.statusCode===200?0:1)}).on('error',()=>process.exit(1))" 2>/dev/null; then
     echo -e "${GREEN}✓${NC} Backend server is running on port 8080"
 else
     echo -e "${RED}✗${NC} Backend server is not running!"
     echo -e "${YELLOW}Please start the backend server first:${NC}"
     echo -e "  cd ../backend"
-    echo -e "  export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64"
+    echo -e "  # Set a secure secret (any long random string works):" 
+    echo -e "  export JWT_SECRET=my-dev-secret-replace-in-prod"
     echo -e "  mvn spring-boot:run"
+    echo -e ""
+    echo -e "${YELLOW}Note:${NC} JWT_SECRET env var is required. Without it the app won't start."
     exit 1
 fi
 
@@ -80,7 +83,14 @@ if [ $TEST_EXIT_CODE -eq 0 ]; then
     echo -e "   JSON: ${BLUE}$(pwd)/reports/test-report.json${NC}"
     echo ""
     echo -e "Open HTML report in browser:"
-    echo -e "   ${YELLOW}xdg-open reports/test-report.html${NC}"
+    # Cross-platform open: macOS=open, Linux=xdg-open, Windows Git Bash=start
+    if command -v open &>/dev/null; then
+        echo -e "   ${YELLOW}open reports/test-report.html${NC}"
+    elif command -v xdg-open &>/dev/null; then
+        echo -e "   ${YELLOW}xdg-open reports/test-report.html${NC}"
+    else
+        echo -e "   ${YELLOW}start reports/test-report.html${NC}"
+    fi
     echo ""
     echo -e "✅ ${GREEN}Backend is fully validated and ready for UI development!${NC}"
 else

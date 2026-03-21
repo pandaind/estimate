@@ -13,6 +13,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import java.util.List;
 
 @Slf4j
@@ -28,9 +31,17 @@ public class UserServiceImpl implements IUserService {
     public List<User> getActiveUsers(String sessionCode, Boolean activeOnly) {
         Session session = sessionService.getSession(sessionCode);
         if (activeOnly) {
-            return userRepository.findBySessionAndIsActive(session, true);
+            return userRepository.findBySessionAndActive(session, true);
         }
         return userRepository.findBySession(session);
+    }
+
+    public Page<User> getActiveUsersPage(String sessionCode, Boolean activeOnly, Pageable pageable) {
+        Session session = sessionService.getSession(sessionCode);
+        if (activeOnly) {
+            return userRepository.findBySessionAndActive(session, true, pageable);
+        }
+        return userRepository.findBySession(session, pageable);
     }
 
     public User getUser(String sessionCode, Long userId) {

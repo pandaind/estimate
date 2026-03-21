@@ -1,11 +1,14 @@
 package com.pandac.planningpoker.model;
 
 import jakarta.persistence.*;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -14,14 +17,20 @@ import com.pandac.planningpoker.model.converter.StringListConverter;
 
 @Entity
 @Table(name = "sessions")
-@Data
+@Getter @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@ToString(exclude = {"stories", "users"})
 public class Session {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
     private Long id;
+
+    @Version
+    private Long version;
     
     @Column(unique = true, nullable = false)
     private String sessionCode;
@@ -49,33 +58,32 @@ public class Session {
     private List<User> users = new ArrayList<>();
     
     @Column(nullable = false)
-    private LocalDateTime createdAt;
-    
-    private LocalDateTime updatedAt;
-    
-    @Column(nullable = false)
-    private Boolean isActive = true;
+    private OffsetDateTime createdAt;
+
+    private OffsetDateTime updatedAt;
+    @Column(name = "is_active", nullable = false)
+    private boolean active = true;
     
     private Long currentStoryId;
     
     @Column(nullable = false)
-    private Boolean votesRevealed = false;
+    private boolean votesRevealed = false;
     
     // Session Settings (embedded — add new settings fields only in SessionSettings.java)
     @Embedded
     private SessionSettings settings = new SessionSettings();
 
     @Column(nullable = false)
-    private Boolean moderatorCanVote = false;
+    private boolean moderatorCanVote = false;
     
     @PrePersist
     protected void onCreate() {
-        createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
+        createdAt = OffsetDateTime.now();
+        updatedAt = OffsetDateTime.now();
     }
-    
+
     @PreUpdate
     protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
+        updatedAt = OffsetDateTime.now();
     }
 }

@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 
 /**
  * Pure-function utility that computes all voting statistics from a list of {@link Vote}s.
- * Eliminates the duplicated calculation code in {@code PlanningPokerService.revealVotes()}
+ * Eliminates the duplicated calculation code in {@code SessionServiceImpl.revealVotes()}
  * and {@code AnalyticsService.getStoryAnalytics()}.
  */
 @Component

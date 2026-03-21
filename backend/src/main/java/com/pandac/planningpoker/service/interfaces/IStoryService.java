@@ -3,6 +3,8 @@ package com.pandac.planningpoker.service.interfaces;
 import com.pandac.planningpoker.dto.*;
 import com.pandac.planningpoker.model.Story;
 import com.pandac.planningpoker.model.StoryStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
@@ -11,6 +13,8 @@ public interface IStoryService {
     Story createStory(String sessionCode, CreateStoryRequest request);
 
     List<Story> getStories(String sessionCode, StoryStatus status);
+
+    Page<Story> getStoriesPage(String sessionCode, StoryStatus status, Pageable pageable);
 
     Story getStory(String sessionCode, Long storyId);
 

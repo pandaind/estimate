@@ -1,9 +1,11 @@
 import axios from 'axios';
-import { toast } from 'sonner';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
 // Token management
+// SECURITY NOTE: Tokens are stored in localStorage which is accessible to any
+// JavaScript on the page. This is a known XSS risk. Prefer HttpOnly cookies in
+// a production deployment that can serve the API and frontend on the same origin.
 const TOKEN_KEY = 'planning_poker_token';
 
 export const tokenManager = {
@@ -31,18 +33,17 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Response interceptor for consistent error handling
+// Response interceptor: clears token on 401. Components handle their own toasts.
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    const errorMessage = error.response?.data?.message || error.message || 'An error occurred';
-    toast.error(errorMessage);
-
-    // Clear token on 401 Unauthorized
+    // Clear token on 401 Unauthorized so the user is effectively logged out.
+    // Do NOT call toast.error here — every call site has its own catch block that
+    // calls toast.error via parseError(), so firing it here causes a double toast.
     if (error.response?.status === 401) {
       tokenManager.clear();
     }
-    
+
     return Promise.reject(error);
   }
 );

@@ -15,8 +15,9 @@ export default defineConfig({
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
   
-  /* Opt out of parallel tests on CI. */
-  workers: process.env.CI ? 1 : undefined,
+  /* Opt out of parallel tests on CI. Use 2 workers locally for faster runs
+     while keeping backend load manageable. */
+  workers: process.env.CI ? 1 : 2,
   
   /* Increase timeout for complex E2E tests */
   timeout: 60000, // 60 seconds per test (increased from 30s)

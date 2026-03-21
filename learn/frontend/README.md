@@ -15,6 +15,9 @@ Welcome! This folder walks you through every concept used in the EstiMate fronte
 | [07-websockets.md](07-websockets.md) | WebSocket + STOMP | Real-time collaboration |
 | [08-tailwind-styling.md](08-tailwind-styling.md) | Tailwind CSS | Utility-first styling and dark mode |
 | [09-animations.md](09-animations.md) | Framer Motion | Smooth transitions and animations |
+| [10-testing.md](10-testing.md) | Vitest + Testing Library | Unit testing utilities, reducers, and components |
+| [11-accessibility.md](11-accessibility.md) | Accessibility (WCAG) | aria-labels, dialog roles, tab semantics, screen readers |
+| [12-skeleton-loading.md](12-skeleton-loading.md) | Skeleton Loading & Responsiveness | Loading placeholders, connection status, mobile-first Tailwind |
 
 ## Technologies at a glance
 

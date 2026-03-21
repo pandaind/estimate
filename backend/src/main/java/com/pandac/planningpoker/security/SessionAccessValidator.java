@@ -65,7 +65,7 @@ public class SessionAccessValidator {
         }
         
         User user = userOpt.get();
-        if (!user.getIsActive()) {
+        if (!user.isActive()) {
             throw new UnauthorizedAccessException("User is no longer active in this session");
         }
         

@@ -2,21 +2,27 @@ package com.pandac.planningpoker.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 @Entity
 @Table(name = "votes")
-@Data
+@Getter @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@ToString(exclude = {"story", "user"})
 public class Vote {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
     private Long id;
     
     @ManyToOne(fetch = FetchType.LAZY)
@@ -35,10 +41,10 @@ public class Vote {
     private Integer confidence; // 1-5 scale for estimation confidence
     
     @Column(nullable = false)
-    private LocalDateTime votedAt;
+    private OffsetDateTime votedAt;
     
     @PrePersist
     protected void onCreate() {
-        votedAt = LocalDateTime.now();
+        votedAt = OffsetDateTime.now();
     }
 }

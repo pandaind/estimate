@@ -182,6 +182,7 @@ const VotingPanel = ({
               <button
                 key={level}
                 onClick={() => setConfidence(level)}
+                aria-label={`Confidence level ${level} of 5`}
                 className={`w-12 h-12 rounded-lg border-2 transition-all ${
                   confidence >= level
                     ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/20 text-blue-600'
@@ -256,6 +257,7 @@ const VotingPanel = ({
           <div className="flex space-x-3">
             {!session.votesRevealed ? (
               <button
+                data-testid="btn-reveal-votes"
                 onClick={handleReveal}
                 disabled={revealLoading || voteCount === 0}
                 className="flex-1 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"

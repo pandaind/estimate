@@ -2,21 +2,27 @@ package com.pandac.planningpoker.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 @Entity
 @Table(name = "users")
-@Data
+@Getter @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@ToString(exclude = {"session"})
 public class User {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
     private Long id;
     
     @Column(nullable = false, length = 50)
@@ -29,28 +35,27 @@ public class User {
     @JsonIgnore
     private Session session;
     
-    @Column(nullable = false)
-    private Boolean isActive = true;
+    @Column(name = "is_active", nullable = false)
+    private boolean active = true;
+    
+    @Column(name = "is_observer", nullable = false)
+    private boolean observer = false;
+    
+    @Column(name = "is_moderator", nullable = false)
+    private boolean moderator = false;
     
     @Column(nullable = false)
-    private Boolean isObserver = false;
-    
-    @Column(nullable = false)
-    private Boolean isModerator = false;
-    
-    @Column(nullable = false)
-    private LocalDateTime joinedAt;
-    
-    private LocalDateTime lastSeenAt;
-    
+    private OffsetDateTime joinedAt;
+
+    private OffsetDateTime lastSeenAt;
     @PrePersist
     protected void onCreate() {
-        joinedAt = LocalDateTime.now();
-        lastSeenAt = LocalDateTime.now();
+        joinedAt = OffsetDateTime.now();
+        lastSeenAt = OffsetDateTime.now();
     }
-    
+
     @PreUpdate
     protected void onUpdate() {
-        lastSeenAt = LocalDateTime.now();
+        lastSeenAt = OffsetDateTime.now();
     }
 }

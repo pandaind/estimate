@@ -23,10 +23,6 @@ export function useSessionWebSocket({
   const { subscribe, connected } = useWebSocket();
 
   useEffect(() => {
-    // Wait until the WebSocket connection is fully established before subscribing.
-    // Without this guard, subscribe() returns null (not connected) and subscriptions
-    // are never created. Re-running when `connected` changes ensures we subscribe as
-    // soon as the connection is ready and re-subscribe after reconnects.
     if (!sessionCode || !connected) return;
 
     const parse = (handler) => (message) => {
@@ -47,6 +43,5 @@ export function useSessionWebSocket({
     ].filter(Boolean);
 
     return () => subs.forEach((unsub) => unsub?.());
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sessionCode, connected]);
+  }, [sessionCode, connected, onStoryChange, onReveal, onUserChange, onTimerSettings, onVoteChange, subscribe]);
 }

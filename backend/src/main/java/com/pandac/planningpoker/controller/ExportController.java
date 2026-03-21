@@ -15,7 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -65,7 +65,7 @@ public class ExportController {
     public ResponseEntity<Map<String, Object>> healthCheck() {
         Map<String, Object> status = new HashMap<>();
         status.put("status", "UP");
-        status.put("timestamp", LocalDateTime.now());
+        status.put("timestamp", OffsetDateTime.now());
         return ResponseEntity.ok(status);
     }
 }

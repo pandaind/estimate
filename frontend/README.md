@@ -4,8 +4,8 @@ React UI with real-time updates.
 
 ## Stack
 
-- React 18
-- Vite
+- React 19
+- Vite 7
 - TailwindCSS
 - Framer Motion
 - Axios
@@ -24,3 +24,14 @@ App: http://localhost:5173
 ```bash
 npm run build
 ```
+
+## Test
+
+```bash
+npm test           # single run
+npm run test:watch # watch mode
+```
+
+## Security Note
+
+JWT tokens are stored in `localStorage`. This makes them readable to any JavaScript on the page (XSS attack vector). For production deployments handling sensitive data, migrate to `HttpOnly` / `Secure` / `SameSite=Strict` cookies managed server-side so the token is never accessible to JavaScript at all.

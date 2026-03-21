@@ -16,11 +16,14 @@ export default function SessionTabs({ activeTab, onTabChange }) {
   return (
     <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
-        <nav className="flex space-x-1 sm:space-x-6 overflow-x-auto scrollbar-hide -mb-px">
+        <nav className="flex space-x-1 sm:space-x-6 overflow-x-auto scrollbar-hide -mb-px" role="tablist">
           {TABS.map((tab) => (
             <button
               key={tab.id}
+              data-testid={`tab-${tab.id}`}
               onClick={() => onTabChange(tab.id)}
+              role="tab"
+              aria-selected={activeTab === tab.id}
               className={cn(
                 'flex items-center space-x-1.5 py-3 sm:py-5 px-2 sm:px-3 border-b-2 font-medium transition-colors whitespace-nowrap flex-shrink-0 text-sm',
                 activeTab === tab.id

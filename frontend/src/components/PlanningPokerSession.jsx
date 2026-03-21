@@ -14,6 +14,7 @@ import SessionSettings from './session/SessionSettings';
 import ExportModal from './export/ExportModal';
 import ImportModal from './export/ImportModal';
 import RealTimeNotifications from './websocket/RealTimeNotifications';
+import ConnectionStatus from './websocket/ConnectionStatus';
 import TutorialModal from './ux/TutorialModal';
 
 const PlanningPokerSession = ({
@@ -78,7 +79,7 @@ const PlanningPokerSession = ({
   useEffect(() => {
     fetchUsers();
     fetchSessionDetails();
-  }, [session.sessionCode]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [fetchUsers, fetchSessionDetails]);
 
   // ── WebSocket subscriptions (consolidated via hook) ───────────────────────
   useSessionWebSocket({
@@ -189,6 +190,7 @@ const PlanningPokerSession = ({
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <RealTimeNotifications sessionCode={session.sessionCode} />
+      <ConnectionStatus />
 
       <SessionHeader
         session={session}

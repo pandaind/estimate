@@ -76,12 +76,14 @@ function Home() {
 
       <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 w-full max-w-xs sm:max-w-none px-6 sm:px-0">
         <button
+          data-testid="btn-create-session"
           onClick={() => navigate('/create')}
           className="bg-blue-600 text-white px-8 sm:px-10 py-3 sm:py-4 rounded-xl font-semibold text-base sm:text-lg hover:bg-blue-700 active:bg-blue-800 transition-colors w-full sm:w-auto text-center"
         >
           Create Session
         </button>
         <button
+          data-testid="btn-join-session"
           onClick={() => navigate('/join')}
           className="bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white px-8 sm:px-10 py-3 sm:py-4 rounded-xl font-semibold text-base sm:text-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors border border-gray-200 dark:border-gray-700 w-full sm:w-auto text-center"
         >

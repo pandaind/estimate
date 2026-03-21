@@ -70,15 +70,88 @@ public class Session {
 ## Lombok annotations explained
 
 ```java
-@Data               // = @Getter + @Setter + @ToString + @EqualsAndHashCode
-@Builder            // enables: Session.builder().name("Foo").active(true).build()
+@Getter             // generates getters for all fields
+@Setter             // generates setters for all fields
 @NoArgsConstructor  // JPA needs a no-arg constructor to load entities from DB
 @AllArgsConstructor // builder also needs all-args constructor
 @RequiredArgsConstructor // constructor for final/non-null fields (used in services)
+@Builder            // enables: Session.builder().name("Foo").active(true).build()
 @Slf4j              // adds: private static final Logger log = ...
 ```
 
 Without Lombok, a 10-field entity would need ~100 lines of getters/setters. With Lombok: just annotations.
+
+## Why JPA entities don't use `@Data`
+
+Lombok's `@Data` is a shortcut for `@Getter + @Setter + @ToString + @EqualsAndHashCode`. It's convenient for plain Java objects, but **dangerous on JPA entities**.
+
+### Problem 1: `equals`/`hashCode` over lazy collections
+
+`@Data` generates `equals()` and `hashCode()` that include **all fields** by default. For an entity with a lazy-loaded `@OneToMany` collection:
+
+```java
+@Data  // ← dangerous
+public class Session {
+    private Long id;
+    @OneToMany(fetch = FetchType.LAZY)
+    private List<Story> stories;   // lazy — not loaded yet
+}
+
+// Somewhere outside a transaction:
+session1.equals(session2);  // ← triggers loading of ALL stories for BOTH sessions!
+```
+
+This causes `LazyInitializationException` (if the Hibernate session is closed) or silent N+1 queries (if it's still open).
+
+### Problem 2: `toString()` triggers cascade loading
+
+Logging an entity with `@Data`-generated `toString()` will traverse every relationship:
+
+```java
+log.debug("Session: {}", session);  // ← loads stories → loads votes for each story → ...
+```
+
+This can load thousands of rows for a harmless log statement.
+
+### Problem 3: bidirectional relationships cause stack overflow
+
+```java
+// Session has @OneToMany List<Story> stories
+// Story has @ManyToOne Session session
+
+session.toString()
+  → Story.toString()  (for each story)
+    → Session.toString()  (the story's session)
+      → Story.toString()  (for each story again)
+        → StackOverflowError
+```
+
+### The fix: explicit annotations
+
+Replace `@Data` on JPA entities with specific annotations, and use `@EqualsAndHashCode` only on the `id`:
+
+```java
+@Entity
+@Table(name = "sessions")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)  // only compare by id
+public class Session {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include   // only this field participates in equals/hashCode
+    private Long id;
+
+    // ... other fields ...
+    // No @ToString that traverses collections
+}
+```
+
+With `@EqualsAndHashCode(onlyExplicitlyIncluded = true)`: two sessions are equal if and only if they have the same `id`. Collections are never touched.
 
 ## Relationships
 

@@ -313,7 +313,7 @@ const TutorialModal = ({ isOpen, onClose, onComplete }) => {
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" role="dialog" aria-modal="true" aria-label="Tutorial">
         <motion.div
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
@@ -330,6 +330,7 @@ const TutorialModal = ({ isOpen, onClose, onComplete }) => {
             </div>
             <button
               onClick={handleSkip}
+              aria-label="Close tutorial"
               className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
             >
               <FontAwesomeIcon icon={faXmark} className="w-6 h-6" />
@@ -349,6 +350,7 @@ const TutorialModal = ({ isOpen, onClose, onComplete }) => {
                 <button
                   key={index}
                   onClick={() => setCurrentStep(index)}
+                  aria-label={`Go to step ${index + 1}`}
                   className={`w-2 h-2 rounded-full transition-colors ${
                     index === currentStep
                       ? 'bg-blue-600 dark:bg-blue-400 w-6'

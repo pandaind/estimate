@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -25,6 +25,7 @@ public class AnalyticsService {
     private final UserRepository userRepository;
     private final VoteRepository voteRepository;
     private final VoteStatisticsCalculator voteStatisticsCalculator;
+    private final VoteResponseMapper voteResponseMapper;
     
     /**
      * Get detailed analytics for a specific story's votes
@@ -53,11 +54,11 @@ public class AnalyticsService {
         analytics.setTotalVotes(votes.size());
         
         // Get participant count from session
-        List<User> participants = userRepository.findBySessionAndIsActive(session, true);
+        List<User> participants = userRepository.findBySessionAndActive(session, true);
         // Filter based on moderatorCanVote setting
-        long participantCount = session.getModeratorCanVote() 
+        long participantCount = session.isModeratorCanVote() 
             ? participants.size() 
-            : participants.stream().filter(u -> !u.getIsModerator()).count();
+            : participants.stream().filter(u -> !u.isModerator()).count();
         analytics.setParticipantCount((int) participantCount);
         
         if (!votes.isEmpty()) {
@@ -69,7 +70,7 @@ public class AnalyticsService {
 
             // Convert votes to VoteResponse for detailed view
             List<VoteResponse> voteResponses = votes.stream()
-                    .map(this::convertToVoteResponse)
+                    .map(voteResponseMapper::toVoteResponse)
                     .collect(Collectors.toList());
             analytics.setVotes(voteResponses);
 
@@ -91,13 +92,13 @@ public class AnalyticsService {
             
             // Calculate voting duration if votes have timestamps
             if (votes.stream().allMatch(v -> v.getVotedAt() != null)) {
-                LocalDateTime firstVote = votes.stream()
+                OffsetDateTime firstVote = votes.stream()
                         .map(Vote::getVotedAt)
-                        .min(LocalDateTime::compareTo)
+                        .min(OffsetDateTime::compareTo)
                         .orElse(null);
-                LocalDateTime lastVote = votes.stream()
+                OffsetDateTime lastVote = votes.stream()
                         .map(Vote::getVotedAt)
-                        .max(LocalDateTime::compareTo)
+                        .max(OffsetDateTime::compareTo)
                         .orElse(null);
                 
                 if (firstVote != null && lastVote != null) {
@@ -127,15 +128,15 @@ public class AnalyticsService {
                 .orElseThrow(() -> new ResourceNotFoundException("Session not found: " + sessionCode));
         
         List<Story> stories = storyRepository.findBySessionOrderByOrderIndex(session);
-        List<User> users = userRepository.findBySessionAndIsActive(session, true);
+        List<User> users = userRepository.findBySessionAndActive(session, true);
         
         SessionAnalyticsDTO analytics = new SessionAnalyticsDTO();
         analytics.setSessionCode(sessionCode);
         analytics.setTotalStories(stories.size());
         // Filter participant count based on moderatorCanVote setting
-        long participantCount = session.getModeratorCanVote() 
+        long participantCount = session.isModeratorCanVote() 
             ? users.size() 
-            : users.stream().filter(u -> !u.getIsModerator()).count();
+            : users.stream().filter(u -> !u.isModerator()).count();
         analytics.setParticipantCount((int) participantCount);
         
         // Count stories by status
@@ -157,7 +158,7 @@ public class AnalyticsService {
         
         // Calculate session duration
         if (session.getCreatedAt() != null) {
-            long durationMinutes = Duration.between(session.getCreatedAt(), LocalDateTime.now()).toMinutes();
+            long durationMinutes = Duration.between(session.getCreatedAt(), OffsetDateTime.now()).toMinutes();
             analytics.setDuration((int) durationMinutes);
         }
         
@@ -190,15 +191,15 @@ public class AnalyticsService {
         for (Story story : stories) {
             List<Vote> votes = voteRepository.findByStory(story);
             if (votes.size() > 1 && votes.stream().allMatch(v -> v.getVotedAt() != null)) {
-                LocalDateTime firstVote = votes.stream()
+                OffsetDateTime firstVote = votes.stream()
                         .map(Vote::getVotedAt)
-                        .min(LocalDateTime::compareTo)
+                        .min(OffsetDateTime::compareTo)
                         .orElse(null);
-                LocalDateTime lastVote = votes.stream()
+                OffsetDateTime lastVote = votes.stream()
                         .map(Vote::getVotedAt)
-                        .max(LocalDateTime::compareTo)
+                        .max(OffsetDateTime::compareTo)
                         .orElse(null);
-                
+
                 if (firstVote != null && lastVote != null) {
                     votingTimes.add((int) Duration.between(firstVote, lastVote).getSeconds());
                 }
@@ -250,7 +251,7 @@ public class AnalyticsService {
         
         // Participant activity
         List<SessionAnalyticsDTO.ParticipantActivity> participantActivities = users.stream()
-                .filter(user -> !user.getIsObserver())
+                .filter(user -> !user.isObserver())
                 .map(user -> {
                     SessionAnalyticsDTO.ParticipantActivity activity = new SessionAnalyticsDTO.ParticipantActivity();
                     activity.setUserId(user.getId());
@@ -288,22 +289,4 @@ public class AnalyticsService {
         }
     }
     
-    private VoteResponse convertToVoteResponse(Vote vote) {
-        VoteResponse response = new VoteResponse();
-        response.setId(vote.getId());
-        response.setEstimate(vote.getEstimate());
-        response.setConfidence(vote.getConfidence());
-        response.setVotedAt(vote.getVotedAt());
-        
-        User user = vote.getUser();
-        VoteResponse.UserInfo userInfo = new VoteResponse.UserInfo();
-        userInfo.setId(user.getId());
-        userInfo.setName(user.getName());
-        userInfo.setAvatar(user.getAvatar());
-        userInfo.setIsModerator(user.getIsModerator());
-        userInfo.setIsObserver(user.getIsObserver());
-        
-        response.setUser(userInfo);
-        return response;
-    }
 }

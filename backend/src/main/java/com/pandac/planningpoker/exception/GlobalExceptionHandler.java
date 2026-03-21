@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -20,7 +20,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleSessionNotFound(
             SessionNotFoundException ex, WebRequest request) {
         ErrorResponse error = new ErrorResponse(
-                LocalDateTime.now(),
+                OffsetDateTime.now(),
                 HttpStatus.NOT_FOUND.value(),
                 "Not Found",
                 ex.getMessage(),
@@ -33,7 +33,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleStoryNotFound(
             StoryNotFoundException ex, WebRequest request) {
         ErrorResponse error = new ErrorResponse(
-                LocalDateTime.now(),
+                OffsetDateTime.now(),
                 HttpStatus.NOT_FOUND.value(),
                 "Not Found",
                 ex.getMessage(),
@@ -46,7 +46,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleUserNotFound(
             UserNotFoundException ex, WebRequest request) {
         ErrorResponse error = new ErrorResponse(
-                LocalDateTime.now(),
+                OffsetDateTime.now(),
                 HttpStatus.NOT_FOUND.value(),
                 "Not Found",
                 ex.getMessage(),
@@ -59,7 +59,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleUnauthorizedAccess(
             UnauthorizedAccessException ex, WebRequest request) {
         ErrorResponse error = new ErrorResponse(
-                LocalDateTime.now(),
+                OffsetDateTime.now(),
                 HttpStatus.FORBIDDEN.value(),
                 "Forbidden",
                 ex.getMessage(),
@@ -72,7 +72,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleSessionMembership(
             SessionMembershipException ex, WebRequest request) {
         ErrorResponse error = new ErrorResponse(
-                LocalDateTime.now(),
+                OffsetDateTime.now(),
                 HttpStatus.FORBIDDEN.value(),
                 "Forbidden",
                 ex.getMessage(),
@@ -85,7 +85,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleNoActiveStory(
             NoActiveStoryException ex, WebRequest request) {
         ErrorResponse error = new ErrorResponse(
-                LocalDateTime.now(),
+                OffsetDateTime.now(),
                 HttpStatus.CONFLICT.value(),
                 "Conflict",
                 ex.getMessage(),
@@ -98,7 +98,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleInvalidVote(
             InvalidVoteException ex, WebRequest request) {
         ErrorResponse error = new ErrorResponse(
-                LocalDateTime.now(),
+                OffsetDateTime.now(),
                 HttpStatus.BAD_REQUEST.value(),
                 "Bad Request",
                 ex.getMessage(),
@@ -118,7 +118,7 @@ public class GlobalExceptionHandler {
         });
         
         ErrorResponse error = new ErrorResponse(
-                LocalDateTime.now(),
+                OffsetDateTime.now(),
                 HttpStatus.BAD_REQUEST.value(),
                 "Validation Failed",
                 errors.toString(),
@@ -131,7 +131,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleAccessDenied(
             AccessDeniedException ex, WebRequest request) {
         ErrorResponse error = new ErrorResponse(
-                LocalDateTime.now(),
+                OffsetDateTime.now(),
                 HttpStatus.FORBIDDEN.value(),
                 "Forbidden",
                 "Access denied: insufficient permissions",
@@ -144,7 +144,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleGlobalException(
             Exception ex, WebRequest request) {
         ErrorResponse error = new ErrorResponse(
-                LocalDateTime.now(),
+                OffsetDateTime.now(),
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
                 "Internal Server Error",
                 ex.getMessage(),

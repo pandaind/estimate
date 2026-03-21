@@ -126,7 +126,7 @@ const StoryEditor = ({ sessionCode, story = null, onSave, onClose }) => {
   ];
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" role="dialog" aria-modal="true" aria-label={isEditing ? 'Edit Story' : 'New Story'}>
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
@@ -147,6 +147,7 @@ const StoryEditor = ({ sessionCode, story = null, onSave, onClose }) => {
           </div>
           <button
             onClick={onClose}
+            aria-label="Close"
             className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
           >
             <FontAwesomeIcon icon={faXmark} className="w-5 h-5 text-gray-500 dark:text-gray-400" />
@@ -267,6 +268,7 @@ const StoryEditor = ({ sessionCode, story = null, onSave, onClose }) => {
                 onChange={(e) => setCurrentTag(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTag())}
                 placeholder="Add a tag"
+                aria-label="Add a tag"
                 className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
               />
               <button
@@ -290,6 +292,7 @@ const StoryEditor = ({ sessionCode, story = null, onSave, onClose }) => {
                     <button
                       type="button"
                       onClick={() => handleRemoveTag(tag)}
+                      aria-label={`Remove tag ${tag}`}
                       className="hover:text-blue-600 dark:hover:text-blue-200"
                     >
                       <FontAwesomeIcon icon={faXmark} className="w-3 h-3" />

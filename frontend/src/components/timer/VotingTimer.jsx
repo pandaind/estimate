@@ -95,7 +95,7 @@ const VotingTimer = ({
             duration: 1,
             repeat: isCritical ? Infinity : 0,
           }}
-          className={`text-6xl font-bold mb-2 ${
+          className={`text-5xl sm:text-6xl font-bold mb-2 ${
             hasCompleted
               ? 'text-red-600 dark:text-red-400'
               : isCritical
@@ -140,7 +140,7 @@ const VotingTimer = ({
           <button
             onClick={handleToggle}
             disabled={hasCompleted}
-            className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-medium transition-colors ${
+            className={`flex items-center space-x-2 px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-medium transition-colors ${
               hasCompleted
                 ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-500 cursor-not-allowed'
                 : isRunning
@@ -163,7 +163,7 @@ const VotingTimer = ({
 
           <button
             onClick={handleReset}
-            className="flex items-center space-x-2 px-6 py-3 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium transition-colors"
+            className="flex items-center space-x-2 px-4 sm:px-6 py-2 sm:py-3 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium transition-colors"
           >
             <FontAwesomeIcon icon={faArrowRotateLeft} className="w-5 h-5" />
             <span>Reset</span>

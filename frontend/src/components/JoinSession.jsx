@@ -85,6 +85,7 @@ const JoinSession = ({ onSessionJoined }) => {
                 key={index}
                 type="button"
                 onClick={() => setFormData({ ...formData, avatar })}
+                aria-label={`Select avatar ${avatar}`}
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
                 className={`w-12 h-12 rounded-full text-2xl flex items-center justify-center border-2 transition-colors ${
@@ -107,6 +108,7 @@ const JoinSession = ({ onSessionJoined }) => {
 
         <button
           type="submit"
+          data-testid="btn-submit-join-session"
           disabled={isLoading}
           className="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
         >

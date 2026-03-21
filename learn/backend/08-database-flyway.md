@@ -293,11 +293,58 @@ spring.h2.console.enabled=false
 logging.level.com.pandac=INFO
 ```
 
+## `OffsetDateTime` vs `LocalDateTime` for timestamps
+
+Early versions of the codebase used `LocalDateTime` for all timestamps. This is a common mistake.
+
+### The problem with `LocalDateTime`
+
+`LocalDateTime` represents a point in time **with no timezone information**.
+
+```java
+LocalDateTime.now()  // → 2026-03-21T09:30:00  — but in which timezone?
+```
+
+If the server is in UTC+0 and a user is in UTC+5:30, the stored timestamp is in the server's timezone — but a client in a different timezone cannot know that without out-of-band knowledge.
+
+The real problem: if you ever deploy to multiple regions or change server timezone, historical timestamps become ambiguous.
+
+### `OffsetDateTime` — timezone included
+
+```java
+OffsetDateTime.now()  // → 2026-03-21T09:30:00+05:30  — unambiguous!
+```
+
+The offset (`+05:30`) is stored alongside the time. The database column type is `TIMESTAMP WITH TIME ZONE`, which PostgreSQL normalises to UTC internally.
+
+### How EstiMate handles it
+
+All timestamp fields use `OffsetDateTime`:
+
+```java
+// ErrorResponse.java
+private OffsetDateTime timestamp = OffsetDateTime.now(ZoneOffset.UTC);
+
+// AnalyticsService.java
+OffsetDateTime firstVote = OffsetDateTime.MAX;
+OffsetDateTime lastVote = OffsetDateTime.MIN;
+for (Vote v : votes) {
+    if (v.getVotedAt().isBefore(firstVote)) firstVote = v.getVotedAt();
+    if (v.getVotedAt().isAfter(lastVote))  lastVote  = v.getVotedAt();
+}
+
+// ExportController.java — health response
+return Map.of("status", "ok", "timestamp", OffsetDateTime.now(ZoneOffset.UTC));
+```
+
+Rule of thumb: **always use `OffsetDateTime` for timestamps that span users or systems — use `LocalDateTime` only for calendar values that are inherently local (e.g., "display this event at 9am in the user's local time").**
+
 ## Key takeaways
 
 - H2 (in-memory) for development: no setup, fresh state on every restart, browser console.
 - PostgreSQL for production: persistent, reliable, production-grade.
 - Spring profiles (`application-prod.properties`) apply when `spring.profiles.active=prod`.
+- Use `OffsetDateTime` not `LocalDateTime` for stored timestamps.
 - `ddl-auto=create-drop` is for dev only — Hibernate manages the schema.
 - `ddl-auto=validate` for production — Flyway manages the schema, Hibernate just checks it.
 - Flyway migration files are versioned, applied once, and never modified after applied.

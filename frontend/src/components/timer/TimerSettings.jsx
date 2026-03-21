@@ -60,7 +60,7 @@ const TimerSettings = ({
           </label>
           
           {/* Preset Buttons */}
-          <div className="grid grid-cols-3 gap-2 mb-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-4">
             {presetDurations.map((preset) => (
               <button
                 key={preset.value}
@@ -83,6 +83,7 @@ const TimerSettings = ({
               min="30"
               max="3600"
               step="30"
+              aria-label="Timer duration slider"
               value={duration}
               onChange={(e) => setDuration(Number(e.target.value))}
               className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-600"

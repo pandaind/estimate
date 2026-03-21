@@ -6,6 +6,7 @@ import { analyticsAPI } from '../../utils/api';
 import { handleError } from '../../utils/errorHandler';
 import SessionMetrics from './SessionMetrics';
 import StoryAnalytics from './StoryAnalytics';
+import { AnalyticsSkeleton } from '../ux/Skeleton';
 
 /**
  * AnalyticsDashboard Component
@@ -45,14 +46,7 @@ const AnalyticsDashboard = ({ sessionCode, currentStoryId = null }) => {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center p-12">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-gray-600 dark:text-gray-400">Loading analytics...</p>
-        </div>
-      </div>
-    );
+    return <AnalyticsSkeleton />;
   }
 
   if (error) {
@@ -94,12 +88,14 @@ const AnalyticsDashboard = ({ sessionCode, currentStoryId = null }) => {
       </div>
 
       {/* Tabs */}
-      <div className="flex space-x-2 border-b border-gray-200 dark:border-gray-700">
+      <div className="flex space-x-2 border-b border-gray-200 dark:border-gray-700" role="tablist">
         {tabs.map((tab) => {
           return (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
+              role="tab"
+              aria-selected={activeTab === tab.id}
               className={`flex items-center space-x-2 px-4 py-3 border-b-2 transition-colors ${
                 activeTab === tab.id
                   ? 'border-blue-600 text-blue-600 dark:text-blue-400'

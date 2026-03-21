@@ -2,12 +2,16 @@ package com.pandac.planningpoker.service.interfaces;
 
 import com.pandac.planningpoker.dto.UpdateUserRequest;
 import com.pandac.planningpoker.model.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
 public interface IUserService {
 
     List<User> getActiveUsers(String sessionCode, Boolean activeOnly);
+
+    Page<User> getActiveUsersPage(String sessionCode, Boolean activeOnly, Pageable pageable);
 
     User getUser(String sessionCode, Long userId);
 

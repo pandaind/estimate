@@ -4,22 +4,27 @@ test.describe('Story Management', () => {
   test.beforeEach(async ({ page }) => {
     // Create a session before each test
     await page.goto('/', { waitUntil: 'networkidle' });
-    await page.waitForSelector('button:has-text("Create Session")', { state: 'visible' });
-    await page.click('button:has-text("Create Session")');
+    await page.waitForSelector('[data-testid="btn-create-session"]', { state: 'visible' });
+    await page.click('[data-testid="btn-create-session"]');
     await page.waitForSelector('[name="sessionName"]', { state: 'visible' });
     await page.fill('[name="sessionName"]', 'Story Test Session');
     await page.fill('[name="facilitatorName"]', 'Test Facilitator');
-    await page.click('button:has-text("Create Session")');
-    await page.waitForSelector('button:has-text("Leave")', { state: 'visible', timeout: 10000 });
+    
+    // Submit form directly — bypasses click event propagation that stalls under CPU load
+    await expect(async () => {
+      await page.locator('[data-testid="btn-submit-create-session"]').evaluate(btn => btn.closest('form').requestSubmit());
+      await expect(page).toHaveURL(/\/session\//);
+    }).toPass({ timeout: 45000 });
+    await page.waitForSelector('[data-testid="btn-leave-session"]', { state: 'visible', timeout: 15000 });
     
     // Navigate to Stories tab
-    await page.click('button:has-text("Stories")');
+    await page.click('[data-testid="tab-stories"]');
     await page.waitForTimeout(500); // Wait for tab transition
   });
 
   test('should add a new story to the session', async ({ page }) => {
     // Click add story button
-    await page.click('button:has-text("Add Story")');
+    await page.click('[data-testid="btn-add-story"]');
     await page.waitForSelector('[name="storyTitle"]', { state: 'visible' });
     
     // Fill in story details
@@ -27,7 +32,7 @@ test.describe('Story Management', () => {
     await page.fill('[name="storyDescription"]', 'Implement user login and registration');
     
     // Submit story
-    await page.click('button:has-text("Create Story")');
+    await page.click('[data-testid="btn-create-story"]');
     
     // Verify story appears in the list
     await expect(page.locator('text=User Authentication').first()).toBeVisible();

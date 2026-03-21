@@ -52,6 +52,7 @@ export default function SessionHeader({
                 <span className="hidden sm:inline">Code:</span>
                 <button
                   onClick={copySessionCode}
+                  aria-label="Copy session code"
                   className={cn(
                     'font-mono bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded-lg text-xs sm:text-sm',
                     'flex items-center space-x-1 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors',
@@ -73,6 +74,7 @@ export default function SessionHeader({
               <button
                 onClick={onShowTutorial}
                 title="Tutorial"
+                aria-label="Show tutorial"
                 className={cn(
                   'p-1.5 sm:p-2 rounded-lg bg-gray-100 dark:bg-gray-800',
                   'hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors',
@@ -86,6 +88,7 @@ export default function SessionHeader({
                   <button
                     onClick={onShowExport}
                     title="Export"
+                    aria-label="Export session data"
                     className={cn(
                       'p-1.5 sm:p-2 rounded-lg bg-gray-100 dark:bg-gray-800',
                       'hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors',
@@ -96,6 +99,7 @@ export default function SessionHeader({
                   <button
                     onClick={onShowImport}
                     title="Import"
+                    aria-label="Import stories"
                     className={cn(
                       'p-1.5 sm:p-2 rounded-lg bg-gray-100 dark:bg-gray-800',
                       'hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors',
@@ -106,6 +110,7 @@ export default function SessionHeader({
                   <button
                     onClick={onShowSettings}
                     title="Settings"
+                    aria-label="Session settings"
                     className={cn(
                       'p-1.5 sm:p-2 rounded-lg bg-gray-100 dark:bg-gray-800',
                       'hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors',
@@ -127,14 +132,16 @@ export default function SessionHeader({
             )}
 
             <button
+              data-testid="btn-leave-session"
               onClick={onLeave}
+              aria-label="Leave session"
               className={cn(
                 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white',
                 'p-1.5 sm:px-4 sm:py-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700',
                 'transition-colors flex items-center gap-1.5',
               )}
             >
-              <FontAwesomeIcon icon={faRightFromBracket} className="w-4 h-4 text-gray-600 dark:text-gray-300" />
+              <FontAwesomeIcon icon={faRightFromBracket} className="w-4 h-4 text-gray-600 dark:text-gray-300" aria-hidden="true" />
               <span className="hidden sm:inline text-sm font-medium">Leave</span>
             </button>
           </div>

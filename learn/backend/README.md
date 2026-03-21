@@ -14,12 +14,16 @@ This folder walks you through every concept used in the EstiMate backend — fro
 | [06-websockets.md](06-websockets.md) | Spring WebSocket | STOMP broker, real-time event publishing |
 | [07-exception-handling.md](07-exception-handling.md) | Exception Handling | Global error handler, custom exceptions, error responses |
 | [08-database-flyway.md](08-database-flyway.md) | Database + Flyway | Schema migrations, H2 vs PostgreSQL, environment profiles |
+| [09-testing.md](09-testing.md) | JUnit 5 + Mockito | Unit testing services, mocking dependencies, AssertJ |
+| [10-pagination.md](10-pagination.md) | Spring Data Pageable | Paged repository queries, Page\<T\> response, controller pattern |
+| [11-concurrency.md](11-concurrency.md) | Concurrency + Locking | TOCTOU race conditions, `@Version` optimistic locking, HikariCP tuning |
+| [12-controller-testing.md](12-controller-testing.md) | Controller Testing | `@WebMvcTest`, Spring Security in tests, MockMvc, JDK 25 compatibility |
 
 ## Technologies at a glance
 
 ```
 Java 21              ← language
-Spring Boot 3.2      ← framework (web, security, data)
+Spring Boot 3.5      ← framework (web, security, data)
 Maven                ← build tool
 Spring Data JPA      ← database ORM
 Hibernate 6          ← JPA implementation
@@ -82,6 +86,7 @@ backend/src/main/java/com/pandac/planningpoker/
 
 backend/src/main/resources/
   application.properties           ← dev configuration
-  application-prod.properties      ← production overrides
-  db/migration/V1__initial_schema.sql ← Flyway migration
+  application-prod.properties      ← production overrides (HikariCP, Flyway, logging)
+  db/migration/V1__initial_schema.sql ← Flyway migration (tables, indexes, constraints)
+  db/migration/V2__add_session_version.sql ← optimistic locking version column
 ```

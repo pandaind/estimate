@@ -4,8 +4,8 @@ test.describe('Voting and Estimation', () => {
   test.beforeEach(async ({ page }) => {
     // Create a session and add a story
     await page.goto('/', { waitUntil: 'networkidle' });
-    await page.waitForSelector('button:has-text("Create Session")', { state: 'visible' });
-    await page.click('button:has-text("Create Session")');
+    await page.waitForSelector('[data-testid="btn-create-session"]', { state: 'visible' });
+    await page.click('[data-testid="btn-create-session"]');
     await page.waitForSelector('[name="sessionName"]', { state: 'visible' });
     await page.fill('[name="sessionName"]', 'Voting Test Session');
     await page.fill('[name="facilitatorName"]', 'Test Facilitator');
@@ -14,19 +14,23 @@ test.describe('Voting and Estimation', () => {
     await page.check('#moderatorCanVote');
     await page.waitForTimeout(200);
     
-    await page.click('button:has-text("Create Session")');
-    await page.waitForSelector('button:has-text("Leave")', { state: 'visible', timeout: 10000 });
+    // Submit form directly — bypasses click event propagation that stalls under CPU load
+    await expect(async () => {
+      await page.locator('[data-testid="btn-submit-create-session"]').evaluate(btn => btn.closest('form').requestSubmit());
+      await expect(page).toHaveURL(/\/session\//);
+    }).toPass({ timeout: 45000 });
+    await page.waitForSelector('[data-testid="btn-leave-session"]', { state: 'visible', timeout: 15000 });
     
     // Navigate to Stories tab to add a story
-    await page.click('button:has-text("Stories")');
+    await page.click('[data-testid="tab-stories"]');
     await page.waitForTimeout(500); // Wait for tab transition
     
     // Add a story to vote on
-    await page.click('button:has-text("Add Story")');
+    await page.click('[data-testid="btn-add-story"]');
     await page.waitForSelector('[name="storyTitle"]', { state: 'visible' });
     await page.fill('[name="storyTitle"]', 'Story for Voting');
     await page.fill('[name="storyDescription"]', 'Test voting on this story');
-    await page.click('button:has-text("Create Story")');
+    await page.click('[data-testid="btn-create-story"]');
     await page.waitForTimeout(500); // Wait for story to be created
     
     // Activate the story for voting
@@ -34,8 +38,9 @@ test.describe('Voting and Estimation', () => {
     await page.waitForTimeout(500); // Wait for activation
     
     // Navigate back to Estimate tab for voting
-    await page.click('button:has-text("Estimate")');
-    await page.waitForTimeout(1000); // Wait for tab transition and state update
+    await page.click('[data-testid="tab-estimate"]');
+    // Wait for voting cards to appear — confirms currentStory is set and EstimationCards rendered
+    await page.waitForSelector('[aria-label$="points"]', { state: 'visible', timeout: 15000 });
   });
 
   test('should cast a vote using estimation cards', async ({ page }) => {

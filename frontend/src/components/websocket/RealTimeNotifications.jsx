@@ -192,6 +192,7 @@ const RealTimeNotifications = ({ sessionCode, currentUserId }) => {
               </p>
               <button
                 onClick={() => removeNotification(notification.id)}
+                aria-label="Dismiss notification"
                 className={`${colors.icon} hover:opacity-70 transition-opacity`}
               >
                 <FontAwesomeIcon icon={faXmark} className="w-4 h-4" />
