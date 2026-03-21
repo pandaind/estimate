@@ -1,6 +1,7 @@
 package com.pandac.planningpoker.service;
 
 import com.pandac.planningpoker.dto.CreateStoryRequest;
+import com.pandac.planningpoker.dto.UpdateStoryRequest;
 import com.pandac.planningpoker.exception.StoryNotFoundException;
 import com.pandac.planningpoker.model.*;
 import com.pandac.planningpoker.repository.StoryRepository;
@@ -141,6 +142,46 @@ class StoryServiceImplTest {
         Page<Story> result = storyService.getStoriesPage("SES001", null, pageable);
 
         assertThat(result.getTotalElements()).isEqualTo(1);
+    }
+
+    // ─── updateStory ─────────────────────────────────────────────────────────────
+
+    @Test
+    void updateStory_updatesOnlyProvidedFields() {
+        Story existing = new Story();
+        existing.setId(5L);
+        existing.setTitle("Original Title");
+        existing.setDescription("Original Desc");
+        existing.setPriority(Priority.LOW);
+        existing.setSession(session);
+
+        UpdateStoryRequest request = new UpdateStoryRequest();
+        request.setTitle("Updated Title");
+        request.setPriority(Priority.HIGH);
+        // description not set — should remain unchanged
+
+        when(sessionService.getSession("SES001")).thenReturn(session);
+        when(storyRepository.findById(5L)).thenReturn(Optional.of(existing));
+        when(storyRepository.save(any(Story.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        Story result = storyService.updateStory("SES001", 5L, request);
+
+        assertThat(result.getTitle()).isEqualTo("Updated Title");
+        assertThat(result.getDescription()).isEqualTo("Original Desc");
+        assertThat(result.getPriority()).isEqualTo(Priority.HIGH);
+        verify(storyRepository).save(existing);
+    }
+
+    @Test
+    void updateStory_nonExistentStory_throwsStoryNotFoundException() {
+        UpdateStoryRequest request = new UpdateStoryRequest();
+        request.setTitle("New Title");
+
+        when(sessionService.getSession("SES001")).thenReturn(session);
+        when(storyRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> storyService.updateStory("SES001", 99L, request))
+                .isInstanceOf(StoryNotFoundException.class);
     }
 
     // ─── deleteStory ─────────────────────────────────────────────────────────────

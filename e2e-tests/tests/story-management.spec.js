@@ -38,44 +38,54 @@ test.describe('Story Management', () => {
     await expect(page.locator('text=User Authentication').first()).toBeVisible();
   });
 
-  test.skip('should edit an existing story', async ({ page }) => {
-    // TODO: Edit functionality not yet implemented in UI
+  test('should edit an existing story', async ({ page }) => {
     // Add a story first
-    await page.click('button:has-text("Add Story")');
+    await page.click('[data-testid="btn-add-story"]');
     await page.waitForSelector('[name="storyTitle"]', { state: 'visible' });
     await page.fill('[name="storyTitle"]', 'Original Title');
     await page.fill('[name="storyDescription"]', 'Original description');
-    await page.click('button:has-text("Create Story")');
-    await page.waitForTimeout(500);
+    await page.click('[data-testid="btn-create-story"]');
+    await expect(page.locator('text=Original Title').first()).toBeVisible({ timeout: 10000 });
     
-    // Click edit button
-    await page.click('[data-testid="edit-story-button"]');
+    // Get the story's edit button (first one in the list)
+    const editButton = page.locator('[data-testid^="btn-edit-story-"]').first();
+    await editButton.click();
     
-    // Update story
-    await page.fill('[name="storyTitle"]', 'Updated Title');
-    await page.click('button:has-text("Save Changes")');
+    // Wait for the StoryEditor modal to appear
+    await page.waitForSelector('[role="dialog"]', { state: 'visible' });
     
-    // Verify update
-    await expect(page.locator('text=Updated Title').first()).toBeVisible();
-    await expect(page.locator('text=Original Title')).not.toBeVisible();
+    // Clear and update title
+    const titleInput = page.locator('[role="dialog"] input[type="text"]').first();
+    await titleInput.clear();
+    await titleInput.fill('Updated Title');
+    
+    // Submit the edit form
+    await page.locator('[role="dialog"] button[type="submit"]').click();
+    
+    // Verify update — modal closes and new title is visible
+    await expect(page.locator('[role="dialog"]')).not.toBeVisible({ timeout: 10000 });
+    await expect(page.locator('text=Updated Title').first()).toBeVisible({ timeout: 10000 });
   });
 
-  test.skip('should delete a story', async ({ page }) => {
-    // TODO: Delete functionality not yet implemented in UI
+  test('should delete a story', async ({ page }) => {
     // Add a story first
-    await page.click('button:has-text("Add Story")');
+    await page.click('[data-testid="btn-add-story"]');
     await page.waitForSelector('[name="storyTitle"]', { state: 'visible' });
     await page.fill('[name="storyTitle"]', 'Story to Delete');
     await page.fill('[name="storyDescription"]', 'This will be deleted');
-    await page.click('button:has-text("Create Story")');
-    await page.waitForTimeout(500);
+    await page.click('[data-testid="btn-create-story"]');
+    await expect(page.locator('text=Story to Delete').first()).toBeVisible({ timeout: 10000 });
     
-    // Delete the story
-    await page.click('[data-testid="delete-story-button"]');
-    await page.click('button:has-text("Confirm")');
+    // Click delete button on the story
+    const deleteButton = page.locator('[data-testid^="btn-delete-story-"]').first();
+    await deleteButton.click();
+    
+    // Confirm deletion in the dialog
+    await page.waitForSelector('[data-testid="btn-confirm-delete"]', { state: 'visible' });
+    await page.click('[data-testid="btn-confirm-delete"]');
     
     // Verify story is removed
-    await expect(page.locator('text=Story to Delete')).not.toBeVisible();
+    await expect(page.locator('text=Story to Delete')).not.toBeVisible({ timeout: 10000 });
   });
 
   test.skip('should navigate between stories', async ({ page }) => {

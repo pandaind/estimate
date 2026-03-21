@@ -1,6 +1,7 @@
 package com.pandac.planningpoker.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -36,12 +37,15 @@ public class User {
     private Session session;
     
     @Column(name = "is_active", nullable = false)
+    @JsonProperty("isActive")
     private boolean active = true;
     
     @Column(name = "is_observer", nullable = false)
+    @JsonProperty("isObserver")
     private boolean observer = false;
     
     @Column(name = "is_moderator", nullable = false)
+    @JsonProperty("isModerator")
     private boolean moderator = false;
     
     @Column(nullable = false)

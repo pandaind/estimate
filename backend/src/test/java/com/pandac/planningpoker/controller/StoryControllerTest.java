@@ -109,6 +109,35 @@ class StoryControllerTest {
                 .andExpect(status().isNotFound());
     }
 
+    // ── updateStory (MODERATOR only) ────────────────────────────────────────
+
+    @Test
+    @WithMockUser(roles = "MODERATOR")
+    void updateStory_asModerator_returns200() throws Exception {
+        UpdateStoryRequest request = new UpdateStoryRequest();
+        request.setTitle("Updated Title");
+
+        Story story = new Story();
+        story.setId(1L);
+        story.setTitle("Updated Title");
+        when(storyService.updateStory(eq("ABC123"), eq(1L), any())).thenReturn(story);
+
+        mockMvc.perform(put("/api/sessions/ABC123/stories/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.title").value("Updated Title"));
+    }
+
+    @Test
+    @WithMockUser(roles = "PARTICIPANT")
+    void updateStory_asParticipant_returns403() throws Exception {
+        mockMvc.perform(put("/api/sessions/ABC123/stories/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"title\":\"x\"}"))
+                .andExpect(status().isForbidden());
+    }
+
     // ── deleteStory (MODERATOR only) ────────────────────────────────────────
 
     @Test

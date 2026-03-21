@@ -4,7 +4,8 @@ import { toast } from 'sonner';
 import { parseError } from '../utils/errorHandler';
 import { cn } from '../utils/cn';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlus, faPlay, faCircleCheck, faEye, faLock, faArrowRotateLeft } from '@fortawesome/free-solid-svg-icons';
+import { faPlus, faPlay, faCircleCheck, faEye, faLock, faArrowRotateLeft, faPenToSquare, faTrash } from '@fortawesome/free-solid-svg-icons';
+import StoryEditor from './story/StoryEditor';
 
 // Helper function to get user initials
 const getInitials = (name) => {
@@ -28,6 +29,8 @@ const StoryList = ({ session, onStorySelected, currentStory, userName, isModerat
   const [isCreating, setIsCreating] = useState(false);
   const [votes, setVotes] = useState({});
   const [revealedStories, setRevealedStories] = useState(new Set());
+  const [editingStory, setEditingStory] = useState(null);
+  const [deletingStoryId, setDeletingStoryId] = useState(null);
 
   useEffect(() => {
     fetchStories();
@@ -161,6 +164,22 @@ const StoryList = ({ session, onStorySelected, currentStory, userName, isModerat
     }
   };
 
+  const handleDeleteStory = async (storyId) => {
+    try {
+      await storyAPI.delete(session.sessionCode, storyId);
+      setDeletingStoryId(null);
+      fetchStories();
+      toast.success('Story deleted');
+    } catch (error) {
+      toast.error(parseError(error).message);
+    }
+  };
+
+  const handleEditSaved = () => {
+    setEditingStory(null);
+    fetchStories();
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -278,6 +297,26 @@ const StoryList = ({ session, onStorySelected, currentStory, userName, isModerat
                       </p>
                     )}
                   </div>
+                  {isModerator && (
+                    <div className="flex items-center gap-1 ml-2">
+                      <button
+                        data-testid={`btn-edit-story-${story.id}`}
+                        onClick={() => setEditingStory(story)}
+                        aria-label={`Edit ${story.title}`}
+                        className="p-2 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950 rounded-lg transition-colors"
+                      >
+                        <FontAwesomeIcon icon={faPenToSquare} className="w-4 h-4" />
+                      </button>
+                      <button
+                        data-testid={`btn-delete-story-${story.id}`}
+                        onClick={() => setDeletingStoryId(story.id)}
+                        aria-label={`Delete ${story.title}`}
+                        className="p-2 text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950 rounded-lg transition-colors"
+                      >
+                        <FontAwesomeIcon icon={faTrash} className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 {/* Voting Info */}
@@ -404,6 +443,43 @@ const StoryList = ({ session, onStorySelected, currentStory, userName, isModerat
           </div>
         )}
       </div>
+
+      {/* Edit Story Modal */}
+      {editingStory && (
+        <StoryEditor
+          sessionCode={session.sessionCode}
+          story={editingStory}
+          onSave={handleEditSaved}
+          onClose={() => setEditingStory(null)}
+        />
+      )}
+
+      {/* Delete Confirmation Dialog */}
+      {deletingStoryId && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" role="dialog" aria-modal="true" aria-label="Confirm delete story">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl p-6 max-w-sm w-full">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Delete Story</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+              Are you sure you want to delete this story? This action cannot be undone.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setDeletingStoryId(null)}
+                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                data-testid="btn-confirm-delete"
+                onClick={() => handleDeleteStory(deletingStoryId)}
+                className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
