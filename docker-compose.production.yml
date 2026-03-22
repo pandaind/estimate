@@ -1,0 +1,134 @@
+# Production Docker Compose — Hostinger VPS
+#
+# Prerequisites:
+#   1. Copy .env.production.example to .env and fill in all values.
+#   2. Add DNS A record: yourdomain.com → VPS IP.
+#   3. Open ports 80 and 443 in the VPS firewall.
+#
+# Deploy:
+#   docker compose -f docker-compose.production.yml pull
+#   docker compose -f docker-compose.production.yml up -d
+#
+# Update:
+#   docker compose -f docker-compose.production.yml pull && \
+#   docker compose -f docker-compose.production.yml up -d --remove-orphans
+
+services:
+
+  # ── Traefik (Reverse Proxy + SSL) ──────────────────────────────────────────
+  traefik:
+    image: traefik:v3.3
+    command:
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+      # Redirect all HTTP → HTTPS permanently
+      - --entrypoints.web.http.redirections.entrypoint.to=websecure
+      - --entrypoints.web.http.redirections.entrypoint.scheme=https
+      - --entrypoints.web.http.redirections.entrypoint.permanent=true
+      # Let's Encrypt (ACME HTTP challenge)
+      - --certificatesresolvers.le.acme.httpchallenge=true
+      - --certificatesresolvers.le.acme.httpchallenge.entrypoint=web
+      - --certificatesresolvers.le.acme.email=${ACME_EMAIL}
+      - --certificatesresolvers.le.acme.storage=/letsencrypt/acme.json
+      - --log.level=WARN
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - letsencrypt:/letsencrypt
+    restart: unless-stopped
+    networks:
+      - proxy
+
+  # ── PostgreSQL ──────────────────────────────────────────────────────────────
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: planningpoker
+      POSTGRES_USER: ${DATABASE_USERNAME:-planningpoker}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DATABASE_USERNAME:-planningpoker}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+    networks:
+      - internal
+    deploy:
+      resources:
+        limits:
+          memory: 256m
+
+  # ── Backend (Spring Boot) ───────────────────────────────────────────────────
+  backend:
+    image: ${DOCKERHUB_USERNAME}/estimate-backend:latest
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DATABASE_URL: jdbc:postgresql://db:5432/planningpoker
+      DATABASE_USERNAME: ${DATABASE_USERNAME:-planningpoker}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION: ${JWT_EXPIRATION:-7200000}
+      CORS_ALLOWED_ORIGINS: https://${DOMAIN}
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8080/api/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 6
+    restart: unless-stopped
+    networks:
+      - internal
+      - proxy
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=proxy
+      # REST API
+      - traefik.http.routers.backend.rule=Host(`${DOMAIN}`) && PathPrefix(`/api`)
+      - traefik.http.routers.backend.entrypoints=websecure
+      - traefik.http.routers.backend.tls.certresolver=le
+      - traefik.http.services.backend.loadbalancer.server.port=8080
+      # WebSocket (SockJS/STOMP)
+      - traefik.http.routers.ws.rule=Host(`${DOMAIN}`) && PathPrefix(`/ws`)
+      - traefik.http.routers.ws.entrypoints=websecure
+      - traefik.http.routers.ws.tls.certresolver=le
+      - traefik.http.services.ws.loadbalancer.server.port=8080
+
+  # ── Frontend (React + nginx) ────────────────────────────────────────────────
+  frontend:
+    image: ${DOCKERHUB_USERNAME}/estimate-frontend:latest
+    restart: unless-stopped
+    networks:
+      - proxy
+    deploy:
+      resources:
+        limits:
+          memory: 128m
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=proxy
+      - traefik.http.routers.frontend.rule=Host(`${DOMAIN}`)
+      - traefik.http.routers.frontend.entrypoints=websecure
+      - traefik.http.routers.frontend.tls.certresolver=le
+      - traefik.http.services.frontend.loadbalancer.server.port=80
+
+volumes:
+  postgres_data:
+  letsencrypt:
+
+networks:
+  proxy:
+  internal:
+    internal: true
