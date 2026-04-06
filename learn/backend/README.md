@@ -19,6 +19,14 @@ This folder walks you through every concept used in the EstiMate backend — fro
 | [11-concurrency.md](11-concurrency.md) | Concurrency + Locking | TOCTOU race conditions, `@Version` optimistic locking, HikariCP tuning |
 | [12-controller-testing.md](12-controller-testing.md) | Controller Testing | `@WebMvcTest`, Spring Security in tests, MockMvc, JDK 25 compatibility |
 
+## Interview Preparation
+
+After working through the guides above, test your knowledge with high-value interview questions:  
+👉 [Interview Questions — Backend](../interview-questions/backend.md)  
+👉 [Interview Questions — System Design](../interview-questions/system-design.md)
+
+---
+
 ## Technologies at a glance
 
 ```
