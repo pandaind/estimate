@@ -19,6 +19,14 @@ Welcome! This folder walks you through every concept used in the EstiMate fronte
 | [11-accessibility.md](11-accessibility.md) | Accessibility (WCAG) | aria-labels, dialog roles, tab semantics, screen readers |
 | [12-skeleton-loading.md](12-skeleton-loading.md) | Skeleton Loading & Responsiveness | Loading placeholders, connection status, mobile-first Tailwind |
 
+## Interview Preparation
+
+After working through the guides above, test your knowledge with high-value interview questions:  
+👉 [Interview Questions — Frontend](../interview-questions/frontend.md)  
+👉 [Interview Questions — System Design](../interview-questions/system-design.md)
+
+---
+
 ## Technologies at a glance
 
 ```
